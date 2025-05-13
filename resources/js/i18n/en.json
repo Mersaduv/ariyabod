@@ -1,0 +1,112 @@
+{
+    "welcome": "Welcome to our website",
+    "dashboard": "Dashboard",
+    "register_title": "Register an Account",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "register": "Register",
+    "already_registered": "Already registered?",
+    "have_account": "Have an account?",
+    "login": "Login",
+
+    "login_title": "Log in to your account",
+    "remember_me": "Remember me",
+    "forgot_password": "Forgot your password?",
+    "dont_have_account": "Don't have an account?",
+    "email_placeholder": "Enter your email",
+    "password_placeholder": "Enter your password",
+
+    "footer": {
+        "company_name": "Ariyabod Companies Group",
+        "address_label": "Address:",
+        "address": "Herat, 64 Meter Road, next to Sadegh 31, Noorzaei Brothers Trading Center, Second Floor",
+        "contact_numbers_label": "Contact Numbers",
+        "phone_numbers": "Phone: 0790003210 | 0790003220",
+        "telegram": "Telegram",
+        "telegram_channel": "Telegram Channel",
+        "instagram": "Instagram",
+        "contact_admin": "Contact Admin",
+        "all_rights_reserved": "All Rights Reserved"
+    },
+
+    "forgot_password_p": {
+        "title": "Forgot Password",
+        "description": "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.",
+        "button": "Email Password Reset Link"
+    },
+
+    "reset_password": {
+        "reset_password": "Reset Password",
+        "email": "Email",
+        "password": "Password",
+        "confirm_password": "Confirm Password"
+    },
+
+    "Delete Account": "Delete Account",
+    "Once your account is deleted...": "Once your account is deleted...",
+    "Are you sure you want to delete your account?": "Are you sure you want to delete your account?",
+    "Please enter your password...": "Please enter your password...",
+    "Password": "Password",
+    "Cancel": "Cancel",
+    "Update Password": "Update Password",
+    "Ensure your account is using...": "Ensure your account is using...",
+    "Current Password": "Current Password",
+    "New Password": "New Password",
+    "Confirm Password": "Confirm Password",
+    "Save": "Save",
+    "Saved.": "Saved.",
+    "Profile Information": "Profile Information",
+    "Update your account's profile...": "Update your account's profile...",
+    "Name": "Name",
+    "Email": "Email",
+    "Your email address is unverified.": "Your email address is unverified.",
+    "Click here to re-send...": "Click here to re-send...",
+    "A new verification link has been sent...": "A new verification link has been sent...",
+
+    "nav": {
+        "home": "Home",
+        "tools": {
+            "title": "Tools",
+            "speedTest": {
+                "title": "Speed Test",
+                "description": "Provided by the software development team solely to measure the internet speed and quality for Ariabod's subscribers."
+            },
+            "packageCalculator": {
+                "title": "Package Calculator",
+                "description": "By selecting the type and amount of the package, you can get the result you need."
+            },
+            "bandwidthCalculator": "Internet Bandwidth Calculator"
+        },
+        "internetRequest": "Internet Request",
+        "packages": "Packages",
+        "aboutUs": "About Us",
+        "contactUs": "Contact Us"
+    },
+    "logout": "Logout",
+    "profile": "Profile",
+    "general_design": "General Design",
+    "banners": "Banners",
+    "users": "Users",
+    "internet_packages": "Internet Packages",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "site_visit_stats": "Site visit statistics based on the selected time range",
+    "language_switcher": "Language",
+
+    "header_form": {
+        "header_text": "Header bar text",
+        "header_color": "Header text color",
+        "enable_header": "Enable header bar",
+        "is_enabled": "Header bar is active",
+        "header_background": "Header background",
+        "upload_header_background": "Upload header background"
+    },
+    "actions": {
+        "save": "Save"
+    },
+    "edit_footer": "Edit site footer",
+    "save_footer": "Save Footer"
+}

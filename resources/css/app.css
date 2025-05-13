@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button {
+    @apply cursor-pointer inline-block;
+}
+
+.button {
+    @apply text-white py-3 px-8 flex items-center justify-center outline-none rounded-md active:scale-[.98] bg-red-600;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-UltraLight.woff2") format("woff2");
+    font-weight: 100;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-Thin.woff2") format("woff2");
+    font-weight: 200;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-Light.woff2") format("woff2");
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-DemiBold.woff2") format("woff2");
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-ExtraBold.woff2") format("woff2");
+    font-weight: 800;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-Black.woff2") format("woff2");
+    font-weight: 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-ExtraBlack.woff2") format("woff2");
+    font-weight: 950;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IRANSansX";
+    src: url("/fonts/sans/IRANSansX-Heavy.woff2") format("woff2");
+    font-weight: 960;
+    font-display: swap;
+}
+
+body {
+    font-family: "IRANSansX", sans-serif;
+}
+body.rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.farsi-digits {
+    font-family: "IRANSansX", sans-serif;
+    font-feature-settings: "ss01";
+}
+/* colors */
+.primary {
+    background-color: #428b7c;
+}
+
+.primary-color {
+    color: #428b7c;
+}
+.bg-slider {
+    background-color: rgb(151, 195, 185);
+}
+.custom-border {
+    width: 570px;
+    height: 2px; /* ضخامت خط */
+    border: 2px dashed transparent;
+    border-image: repeating-linear-gradient(
+            to right,
+            black 0,
+            black 20px,
+            /* طول dash */ transparent 20px,
+            transparent 40px /* فاصله dash */
+        )
+        100 round;
+}
+
+:root {
+    --dash-length: 20;
+    --dash-spacing: 10;
+}
+
+.dashed-circle {
+    width: 510px;
+    height: 510px;
+}
+
+.dashed-circle svg circle {
+    stroke: white;
+    stroke-dasharray: var(--dash-length) var(--dash-spacing);
+}
+
+@keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin-reverse {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 50s linear infinite;
+  }
+
+  .animate-spin-reverse {
+    animation: spin-reverse 50s linear infinite;
+    transform-origin: center center;
+  }

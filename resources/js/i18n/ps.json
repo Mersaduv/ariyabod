@@ -1,0 +1,112 @@
+{
+    "welcome": "زموږ ویب پاڼې ته ښه راغلاست",
+    "dashboard": "ډشبورډ",
+    "register_title": "د حساب ثبتول",
+    "name": "نوم",
+    "email": "برېښنالیک",
+    "password": "پټنوم",
+    "confirm_password": "پټنوم تایید کړئ",
+    "register": "ثبت نام",
+    "already_registered": "پخوا ثبت شوې یاست؟",
+    "have_account": "حساب لرئ؟",
+    "login": "ننوتل",
+
+    "login_title": "خپل حساب ته ننوتل",
+    "remember_me": "زما په یاد وساته",
+    "forgot_password": "پټنوم مو هیر کړی؟",
+    "dont_have_account": "حساب نه لرئ؟",
+    "email_placeholder": "خپل برېښنالیک داخل کړئ",
+    "password_placeholder": "خپل پټنوم داخل کړئ",
+
+    "footer": {
+        "company_name": "اریابود د شرکتونو ګروپ",
+        "address_label": "پته:",
+        "address": "هرات، 64 متره سړک، د صادق 31 نبش، د نورزایی وروڼو تجارتي مرکز، دوهمه پوړ",
+        "contact_numbers_label": "د اړیکو شمېرې",
+        "phone_numbers": "ټیلفون: 0790003210 | 0790003220",
+        "telegram": "ټلګرام",
+        "telegram_channel": "ټلګرام چینل",
+        "instagram": "انسټاګرام",
+        "contact_admin": "ادمن سره اړیکه",
+        "all_rights_reserved": "ټولې حقوق محفوظې دي"
+    },
+
+    "forgot_password_p": {
+        "title": "رمز عبور هېر شوی",
+        "description": "ستاسو رمز عبور هېر شوی؟ کومه ستونزه نشته. یوازې موږ ته خپل ایمیل پته ووایاست او موږ به تاسو ته د رمز عبور د بیا تنظیم کولو لینک واستوو چې تاسو ته اجازه درکوي نوې رمز عبور وټاکئ.",
+        "button": "د رمز عبور بیا تنظیم کولو لینک ایمیل کړئ"
+    },
+
+    "reset_password": {
+        "reset_password": "رمز عبور بیا تنظیم کړئ",
+        "email": "برېښنالیک",
+        "password": "پټنوم",
+        "confirm_password": "پټنوم تایید کړئ"
+    },
+
+    "Delete Account": "حساب ړنګ کړئ",
+    "Once your account is deleted...": "کله چې ستاسو حساب ړنګ شي، ټول معلومات به دائمي ړنګ شي.",
+    "Are you sure you want to delete your account?": "تاسو باوري یاست چې غواړئ خپل حساب ړنګ کړئ؟",
+    "Please enter your password...": "مهرباني وکړئ د تایید لپاره خپل پټنوم ولیکئ.",
+    "Password": "پټنوم",
+    "Cancel": "لغوه کړئ",
+    "Update Password": "پټنوم تازه کړئ",
+    "Ensure your account is using...": "باور وکړئ چې ستاسو حساب یو قوي او تصادفي پټنوم لري.",
+    "Current Password": "اوسنی پټنوم",
+    "New Password": "نوی پټنوم",
+    "Confirm Password": "پټنوم تایید کړئ",
+    "Save": "ثبت کړئ",
+    "Saved.": "ثبت شو.",
+    "Profile Information": "د پروفایل معلومات",
+    "Update your account's profile...": "د خپل حساب پروفایل او ایمیل تازه کړئ.",
+    "Name": "نوم",
+    "Email": "بریښنالیک",
+    "Your email address is unverified.": "ستاسو ایمیل تایید شوی نه دی.",
+    "Click here to re-send...": "د تایید ایمیل بیا لیږلو لپاره دلته کلیک وکړئ.",
+    "A new verification link has been sent...": "نوی تایید لینک ستاسو ایمیل ته لیږل شوی.",
+
+    "nav": {
+        "home": "کور",
+        "tools": {
+            "title": "وسایل",
+            "speedTest": {
+                "title": "د سرعت ازموینه",
+                "description": "یوازې د آریابُد د پیرودونکو لپاره د انټرنیټ د کیفیت او سرعت د ارزونې لپاره د پراختیا ډلې له خوا برابر شوی."
+            },
+            "packageCalculator": {
+                "title": "د بسته محاسبه",
+                "description": "تاسو کولای شئ د بسته ډول او مقدار په ټاکلو سره خپل مطلوب محاسبه ترلاسه کړئ."
+            },
+            "bandwidthCalculator": "د انټرنیټ بینډوېت محاسبه"
+        },
+        "internetRequest": "د انټرنېټ غوښتنه",
+        "packages": "بستې",
+        "aboutUs": "زموږ په اړه",
+        "contactUs": "موږ سره اړیکه"
+    },
+    "logout": "وتل",
+    "profile": "پروفایل",
+    "general_design": "د سایټ عمومي ډیزاین",
+    "banners": "بینرونه",
+    "users": "کارونکي",
+    "internet_packages": "د انټرنټ بستې",
+    "week": "اونۍ",
+    "month": "میاشت",
+    "year": "کال",
+    "site_visit_stats": "د سایټ د لیدو احصایې د ټاکل شوي وخت پر بنسټ",
+    "language_switcher": "ژبه",
+
+    "header_form": {
+        "header_text": "د سرلیک بار متن",
+        "header_color": "د سرلیک د متن رنګ",
+        "enable_header": "د سرلیک بار فعال کړئ",
+        "is_enabled": "سرلیک بار فعال دی",
+        "header_background": "د سرلیک شاليد",
+        "upload_header_background": "د سرلیک شاليد پورته کړئ"
+    },
+    "actions": {
+        "save": "ثبت"
+    },
+    "edit_footer": "د فوټر سمونه",
+    "save_footer": "فوټر خوندي کړئ"
+}

@@ -1,0 +1,111 @@
+{
+    "welcome": "به وب‌سایت ما خوش آمدید",
+    "dashboard": "پیشخوان",
+    "register_title": "ثبت نام حساب کاربری",
+    "name": "نام",
+    "email": "ایمیل",
+    "password": "رمز عبور",
+    "confirm_password": "تکرار کلمه عبور",
+    "register": "ثبت نام",
+    "already_registered": "قبلا ثبت نام کرده‌اید؟",
+    "have_account": "حساب دارید؟",
+    "login": "ورود",
+
+    "login_title": "ورود به حساب کاربری",
+    "remember_me": "مرا به خاطر بسپار",
+    "forgot_password": "رمز عبور خود را فراموش کرده‌اید؟",
+    "dont_have_account": "حساب کاربری ندارید؟",
+    "email_placeholder": "ایمیل خود را وارد کنید",
+    "password_placeholder": "رمز عبور خود را وارد کنید",
+
+    "footer": {
+        "company_name": "گروه شرکت‌های آریابد",
+        "address_label": "آدرس:",
+        "address": "هرات، سرک 64 متره، نبش صادق 31، مجتمع تجارتی برادران نورزایی، طبقه دوم",
+        "contact_numbers_label": "شماره های تماس",
+        "phone_numbers": "تلفن: 0790003210 | 0790003220",
+        "telegram": "تلگرام",
+        "telegram_channel": "کانال تلگرام",
+        "instagram": "اینستاگرام",
+        "contact_admin": "ارتباط با ادمین",
+        "all_rights_reserved": "تمامی حقوق محفوظ است"
+    },
+
+    "forgot_password_p": {
+        "title": "فراموشی رمز عبور",
+        "description": "رمز عبور خود را فراموش کرده‌اید؟ مشکلی نیست. فقط آدرس ایمیل خود را وارد کنید تا لینکی برای بازنشانی رمز عبور برای شما ارسال شود که به شما این امکان را می‌دهد تا رمز عبور جدیدی انتخاب کنید.",
+        "button": "ارسال لینک بازنشانی رمز عبور"
+    },
+
+    "reset_password": {
+        "reset_password": "بازنشانی رمز",
+        "email": "ایمیل",
+        "password": "رمز عبور",
+        "confirm_password": "تکرار رمز عبور"
+    },
+
+    "Delete Account": "حذف حساب کاربری",
+    "Once your account is deleted...": "پس از حذف حساب، تمام اطلاعات شما برای همیشه پاک خواهد شد.",
+    "Are you sure you want to delete your account?": "آیا مطمئن هستید که می‌خواهید حساب کاربری خود را حذف کنید؟",
+    "Please enter your password...": "لطفاً برای تایید، رمز عبور خود را وارد کنید.",
+    "Password": "رمز عبور",
+    "Cancel": "لغو",
+    "Update Password": "به‌روزرسانی رمز عبور",
+    "Ensure your account is using...": "برای امنیت بیشتر، از رمز عبور تصادفی و قوی استفاده کنید.",
+    "Current Password": "رمز عبور فعلی",
+    "New Password": "رمز عبور جدید",
+    "Confirm Password": "تایید رمز عبور",
+    "Save": "ذخیره",
+    "Saved.": "ذخیره شد.",
+    "Profile Information": "اطلاعات پروفایل",
+    "Update your account's profile...": "اطلاعات پروفایل و ایمیل خود را به‌روزرسانی کنید.",
+    "Name": "نام",
+    "Email": "ایمیل",
+    "Your email address is unverified.": "ایمیل شما تایید نشده است.",
+    "Click here to re-send...": "برای ارسال مجدد ایمیل تایید، اینجا کلیک کنید.",
+    "A new verification link has been sent...": "ایمیل تایید جدید برای شما ارسال شد.",
+
+    "nav": {
+        "home": "خانه",
+        "tools": {
+            "title": "ابزارها",
+            "speedTest": {
+                "title": "آزمایش سرعت",
+                "description": "توسط تیم توسعه‌دهندگان نرم‌افزاری شرکت صرفا برای سنجش سرعت و کیفیت ارتباط انترنتی مشترکین آریابُد در اختیار شما قرار گرفته است."
+            },
+            "packageCalculator": {
+                "title": "محاسبه بسته",
+                "description": "با انتخاب نوعیت بسته و مقدار آن، شما میتوانید به نتیجه محاسبه مد نظر خود برسید."
+            },
+            "bandwidthCalculator": "محاسبه پهنای انترنت"
+        },
+        "internetRequest": "درخواست انترنت",
+        "packages": "بسته‌ها",
+        "aboutUs": "درباره ما",
+        "contactUs": "تماس با ما"
+    },
+    "logout": "خروج",
+    "profile": "پروفایل",
+    "general_design": "دیزاین عمومی سایت",
+    "banners": "بنرها",
+    "users": "کاربران",
+    "internet_packages": "بسته‌های اینترنتی",
+    "week": "هفته",
+    "month": "ماه",
+    "year": "سال",
+    "site_visit_stats": "آمار بازدید سایت بر اساس بازه زمانی انتخاب شده",
+    "language_switcher": "زبان",
+    "header_form": {
+        "header_text": "متن نوار هدر",
+        "header_color": "رنگ متن نوار هدر",
+        "enable_header": "فعال کردن نوار هدر",
+        "is_enabled": "فعال بودن نوار هدر",
+        "header_background": "پس‌زمینه هدر",
+        "upload_header_background": "پس‌زمینه هدر را آپلود کنید"
+    },
+    "actions": {
+        "save": "ذخیره"
+    },
+    "edit_footer": "ویرایش فوتر سایت",
+    "save_footer": "ذخیره فوتر"
+}

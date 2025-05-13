@@ -9,6 +9,6 @@ class SiteItem extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'type', 'title', 'image', 'link'
+        'type', 'title', 'image', 'link', 'order'
     ];
 }

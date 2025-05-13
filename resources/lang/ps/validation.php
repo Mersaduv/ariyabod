@@ -16,6 +16,7 @@ return [
         'password' => 'پاسورډ',
         'name' => 'نوم',
         'current_password' => 'اوسنی پاسورډ',
+        'items.*.image' => 'د توکي انځور',
     ],
     'custom' => [
         'current_password' => [

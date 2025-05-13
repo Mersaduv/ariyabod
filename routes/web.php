@@ -8,6 +8,7 @@ use App\Http\Controllers\SiteItemController;
 use App\Models\Circle;
 use App\Models\CircleItem;
 use App\Models\Setting;
+use App\Models\SiteItem;
 use App\Models\Visit;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ use Inertia\Inertia;
 Route::middleware(['log.visit'])->group(function () {
     Route::get('/', function () {
         $headerSetting = Setting::where('key', 'header')->first();
-
+        $circleItems = SiteItem::where('type', 'circle')->get();
         $headerData = $headerSetting ? json_decode($headerSetting->value, true) : [];
         return Inertia::render('Welcome', [
             'canLogin' => Route::has('login'),
@@ -36,6 +37,7 @@ Route::middleware(['log.visit'])->group(function () {
             'laravelVersion' => Application::VERSION,
             'phpVersion' => PHP_VERSION,
             'headerData' => $headerData,
+            'circleItems' => $circleItems,
         ]);
     });
 

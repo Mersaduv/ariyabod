@@ -13,13 +13,7 @@ import { IoMdAdd } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 
 export default function CircleItemsForm({ circleItems = [], message }) {
-    function newItem() {
-        return { title: "", link: "", image: "", status: true };
-    }
-
-    const [items, setItems] = useState(
-        circleItems.length ? circleItems : [newItem()]
-    );
+    const { t } = useTranslation();
 
     const {
         data,
@@ -29,113 +23,155 @@ export default function CircleItemsForm({ circleItems = [], message }) {
         errors,
         wasSuccessful,
         recentlySuccessful,
-    } = useForm({ items: [] });
+    } = useForm({
+        items: circleItems.sort((a, b) => a.order - b.order).length
+            ? circleItems
+            : [
+                  {
+                      title: "",
+                      link: "",
+                      image: "",
+                      status: true,
+                      type: "circle",
+                      order: 0,
+                  },
+              ],
+    });
 
     const addItem = () => {
-        console.log("افزودن آیتم");
-        if (items.length >= 5) {
-            toast.error("شما میتوانید فقط 5 آیتم را اضافه کنید");
+        if (data.items.length >= 6) {
+            toast.error(t("circle_items.max_items_error"));
             return;
         }
-        setItems([...items, newItem()]);
+        setData("items", [
+            ...data.items,
+            {
+                title: "",
+                link: "",
+                image: "",
+                status: true,
+                type: "circle",
+                order: data.items.length,
+            },
+        ]);
     };
 
     const removeItem = (index) => {
-        setItems(items.filter((_, i) => i !== index));
+        setData(
+            "items",
+            data.items.filter((_, i) => i !== index)
+        );
     };
 
     const handleChange = (index, field, value) => {
-        const updatedItems = [...items];
+        const updatedItems = [...data.items];
         updatedItems[index][field] = value;
-        setItems(updatedItems);
+        setData("items", updatedItems);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setData(
-            "items",
-            items.map((item) => ({ ...item, type: "circle" }))
-        );
-        post(route("admin.site-items.store"), {
-            preserveScroll: true,
-        });
+        post(route("admin.site-items.store"), { preserveScroll: true });
     };
 
+    useInertiaResponseHandler({
+        wasSuccessful,
+        recentlySuccessful,
+        errors,
+        message,
+    });
+    console.log(data.items, "data.items");
     return (
-        <form onSubmit={handleSubmit} className="">
-            <h1 className="text-2xl font-bold -mt-2 mb-4">آیتم های دایره ای</h1>
+        <form onSubmit={handleSubmit}>
+            <h1 className="text-2xl font-bold -mt-2 mb-4">
+                {t("circle_items.title")}
+            </h1>
             <div className="flex justify-center flex-wrap gap-6">
-                {items.map((item, index) => (
-                    <div
-                        key={index}
-                        className="p-4 border border-gray-300 rounded-md space-y-4 relative w-fit"
-                    >
-                        <ImageUpload
-                            imageUrl={item.image}
-                            onUpload={(url) =>
-                                handleChange(index, "image", url)
-                            }
-                            error={errors[`items.${index}.image`]}
-                        />
-
-                        <div>
-                            <InputLabel value="عنوان" />
-                            <TextInput
-                                value={item.title}
-                                className="w-full"
-                                onChange={(e) =>
-                                    handleChange(index, "title", e.target.value)
+                {[...data.items]
+                    .sort((a, b) => a.order - b.order)
+                    .map((item, index) => (
+                        <div
+                            key={index}
+                            className="p-4 border border-gray-300 rounded-md space-y-4 relative w-fit"
+                        >
+                            <ImageUpload
+                                imageUrl={item.image}
+                                onUpload={(url) =>
+                                    handleChange(index, "image", url)
                                 }
+                                error={errors[`items.${index}.image`]}
                             />
-                            <InputError
-                                message={errors[`items.${index}.title`]}
-                            />
-                        </div>
 
-                        <div>
-                            <InputLabel value="لینک (اختیاری)" />
-                            <TextInput
-                                value={item.link}
-                                className="w-full"
-                                onChange={(e) =>
-                                    handleChange(index, "link", e.target.value)
-                                }
-                            />
-                            <InputError
-                                message={errors[`items.${index}.link`]}
-                            />
-                        </div>
+                            <div>
+                                <InputLabel
+                                    value={t("circle_items.fields.title")}
+                                />
+                                <TextInput
+                                    value={item.title}
+                                    className="w-full"
+                                    onChange={(e) =>
+                                        handleChange(
+                                            index,
+                                            "title",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <InputError
+                                    message={errors[`items.${index}.title`]}
+                                />
+                            </div>
 
-                        {items.length > 1 && (
-                            <button
-                                type="button"
-                                onClick={() => removeItem(index)}
-                                className="text-red-500 text-2xl border border-red-500 rounded-full p-0.5 absolute -top-7 bg-white -left-2 hover:bg-red-500 hover:text-white transition-all duration-300"
-                            >
-                                <IoClose />
-                            </button>
-                        )}
-                    </div>
-                ))}
+                            <div>
+                                <InputLabel
+                                    value={t("circle_items.fields.link")}
+                                />
+                                <TextInput
+                                    value={item.link}
+                                    className="w-full"
+                                    onChange={(e) =>
+                                        handleChange(
+                                            index,
+                                            "link",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <InputError
+                                    message={errors[`items.${index}.link`]}
+                                />
+                            </div>
+
+                            {data.items.length > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={() => removeItem(index)}
+                                    className="text-red-500 text-2xl border border-red-500 rounded-full p-0.5 absolute -top-7 bg-white -left-2 hover:bg-red-500 hover:text-white transition-all duration-300"
+                                >
+                                    <IoClose />
+                                </button>
+                            )}
+                        </div>
+                    ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full items-end justify-between mt-4">
                 <p className="text-sm text-gray-500">
-                    اولین آیتم وارد شده تصویر وسط آیتم دایره قرار میگیرد, ادامه آیتم های که اضافه میشود دایره های اطراف آن میباشد.
-             </p>
+                    {t("circle_items.description")}
+                </p>
                 <div className="flex gap-2">
                     <div
                         onClick={addItem}
                         className="border cursor-pointer border-[#428b7c] text-[#428b7c] hover:bg-[#428b7c] hover:text-white transition-all duration-300 rounded-md flex justify-center items-center p-2 gap-1 whitespace-nowrap"
                     >
-                        <IoMdAdd /> افزودن آیتم
+                        <IoMdAdd /> {t("circle_items.add_item")}
                     </div>
                     <Button
                         type="submit"
                         isLoading={processing}
                         className="primary"
                     >
-                        ذخیره
+                        {t("circle_items.save")}
                     </Button>
                 </div>
             </div>
@@ -145,6 +181,7 @@ export default function CircleItemsForm({ circleItems = [], message }) {
 
 function ImageUpload({ imageUrl, onUpload, error }) {
     const fileInputRef = useRef(null);
+    const { t } = useTranslation();
 
     const handleImageClick = () => {
         fileInputRef.current?.click();
@@ -160,10 +197,9 @@ function ImageUpload({ imageUrl, onUpload, error }) {
                 "admin.site-items.upload",
                 "image"
             );
-
             onUpload(imageUrl);
         } catch (error) {
-            console.error("آپلود ناموفق");
+            console.error("Upload failed");
         }
     };
 
@@ -187,7 +223,9 @@ function ImageUpload({ imageUrl, onUpload, error }) {
                         className="h-full object-cover w-full"
                     />
                 ) : (
-                    <span className="text-gray-400">آپلود تصویر</span>
+                    <span className="text-gray-400">
+                        {t("circle_items.upload_image")}
+                    </span>
                 )}
             </div>
             {error && <InputError message={error} />}

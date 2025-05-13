@@ -16,6 +16,7 @@ return [
         'password' => 'password',
         'name' => 'name',
         'current_password' => 'current password',
+        'items.*.image' => 'item image',
     ],
     'custom' => [
         'current_password' => [

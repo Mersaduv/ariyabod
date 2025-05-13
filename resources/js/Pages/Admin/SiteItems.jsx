@@ -14,7 +14,7 @@ export default function SiteItems({ auth, circleItems, serviceItems }) {
             <div className="p-4 space-y-6">
                 <h2 className="text-xl font-semibold">بنر آیتم های سایت</h2>
                 <div className="p-4 sm:p-8 py-8 bg-white shadow border sm:rounded-lg">
-                    <CircleItemsForm circleItems={circleItems} />
+                    <CircleItemsForm circleItems={circleItems} message={message} />
                 </div>
 
             </div>

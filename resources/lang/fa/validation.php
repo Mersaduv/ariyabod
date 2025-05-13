@@ -16,6 +16,7 @@ return [
         'password' => 'رمز عبور',
         'name' => 'نام',
         'current_password' => 'رمز عبور فعلی',
+        'items.*.image' => 'تصویر آیتم',
     ],
     'custom' => [
         'current_password' => [

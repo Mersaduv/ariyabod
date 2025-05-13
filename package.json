@@ -27,8 +27,10 @@
         "@tiptap/starter-kit": "^2.12.0",
         "date-fns": "^4.1.0",
         "i18next": "^25.1.1",
+        "keen-slider": "^6.8.6",
         "react-i18next": "^15.5.1",
         "react-icons": "^5.5.0",
+        "react-slick": "^0.30.3",
         "recharts": "^2.15.3",
         "tailwindcss-rtl": "^0.9.0"
     }

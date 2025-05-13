@@ -27,27 +27,38 @@ class SiteItemController extends Controller
         $request->validate([
             'items' => 'required|array',
             'items.*.type' => 'required|string',
-            'items.*.title' => 'required|string|max:255',
-            'items.*.link' => 'nullable|string|url',
-            'items.*.image' => 'nullable|string|url', // تصویر به‌صورت URL
+            'items.*.title' => 'nullable|string|max:255',
+            'items.*.link' => 'nullable|string',
+            'items.*.image' => 'required|string',
             'items.*.status' => 'boolean',
         ]);
 
+        SiteItem::where('type', 'circle')->delete();
+
         $items = [];
 
-        foreach ($request->items as $itemData) {
-            $item = SiteItem::create([
+        foreach ($request->items as $index => $itemData) {
+            if (empty($itemData['image'])) {
+                return redirect()->back()->with('message', [
+                    'type' => 'error',
+                    'text' => 'تصویر آیتم دایره ای الزامی است.',
+                ]);
+            }
+
+            SiteItem::create([
                 'type' => $itemData['type'],
                 'title' => $itemData['title'],
                 'link' => $itemData['link'] ?? null,
-                'image' => $itemData['image'] ?? null,
+                'image' => $itemData['image'],
                 'status' => $itemData['status'] ?? true,
+                'order' => $index,
             ]);
-
-            $items[] = $item;
         }
 
-        return response()->json($items, 201);
+        return redirect()->back()->with('message', [
+            'type' => 'success',
+            'text' => 'آیتم های دایره ای با موفقیت ذخیره شد.',
+        ]);
     }
 
     public function upload(Request $request)

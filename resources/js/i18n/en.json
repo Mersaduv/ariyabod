@@ -108,5 +108,18 @@
         "save": "Save"
     },
     "edit_footer": "Edit site footer",
-    "save_footer": "Save Footer"
+    "save_footer": "Save Footer",
+    "circle_items": {
+        "title": "Circle Items",
+        "fields": {
+            "title": "Title",
+            "link": "Link (optional)",
+            "image": "Image"
+        },
+        "description": "The first item added will be the center image. The following items will be placed around it.",
+        "add_item": "Add Item",
+        "save": "Save",
+        "upload_image": "Upload Image",
+        "max_items_error": "You can only add up to 5 items."
+    }
 }

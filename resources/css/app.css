@@ -134,6 +134,25 @@ body.rtl {
     height: 510px;
 }
 
+@media (max-width: 1280px) {
+    .dashed-circle {
+        width: 350px;
+        height: 350px;
+    }
+}
+@media (max-width: 768px) {
+    .dashed-circle {
+        width: 250px;
+        height: 250px;
+    }
+}
+@media (max-width: 475px) {
+    .dashed-circle {
+        width: 150px;
+        height: 150px;
+    }
+}
+
 .dashed-circle svg circle {
     stroke: white;
     stroke-dasharray: var(--dash-length) var(--dash-spacing);
@@ -141,27 +160,58 @@ body.rtl {
 
 @keyframes spin-slow {
     from {
-      transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     to {
-      transform: rotate(360deg);
+        transform: rotate(360deg);
     }
-  }
+}
 
-  @keyframes spin-reverse {
+@keyframes spin-reverse {
     from {
-      transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     to {
-      transform: rotate(-360deg);
+        transform: rotate(-360deg);
     }
-  }
+}
 
-  .animate-spin-slow {
+.animate-spin-slow {
     animation: spin-slow 50s linear infinite;
-  }
+}
 
-  .animate-spin-reverse {
+.animate-spin-reverse {
     animation: spin-reverse 50s linear infinite;
     transform-origin: center center;
-  }
+}
+.circle-item {
+    position: absolute;
+    top: calc(50% + var(--y) - 75px);
+    left: calc(50% + var(--x) - 75px);
+}
+
+
+@media (max-width: 1280px) {
+    .circle-item {
+        top: calc(50% + var(--y) - 65px);
+        left: calc(50% + var(--x) - 65px);
+    }
+}
+@media (max-width: 768px) {
+    .circle-item {
+        top: calc(50% + var(--y) - 45px);
+        left: calc(50% + var(--x) - 45px);
+    }
+}
+@media (max-width: 600px) {
+    .circle-item {
+        top: calc(50% + var(--y) - 35px);
+        left: calc(50% + var(--x) - 35px);
+    }
+}
+@media (max-width: 475px) {
+    .circle-item {
+        top: calc(50% + var(--y) - 32px);
+        left: calc(50% + var(--x) - 32px);
+    }
+}

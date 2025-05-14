@@ -24,6 +24,7 @@ export default {
             xl2: "1400px",
             "2xl": "1536px",
             xs: "450px",
+            xs2: "475px",
             xs2: "600px",
             xxs: "395px",
         },

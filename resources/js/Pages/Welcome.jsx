@@ -16,6 +16,15 @@ export default function Welcome({
     const { t } = useTranslation();
     const [currentSlide, setCurrentSlide] = useState(0);
     const sliderInterval = useRef(null);
+    const [radius, setRadius] = useState(() =>
+        window.innerWidth >= 1280
+            ? 240
+            : window.innerWidth >= 768
+            ? 180
+            : window.innerWidth >= 475
+            ? 100
+            : 80
+    );
 
     const [sliderRef, slider] = useKeenSlider({
         loop: true,
@@ -28,7 +37,6 @@ export default function Welcome({
         },
     });
 
-    // اسلاید خودکار هر ۳ ثانیه
     useEffect(() => {
         if (!slider) return;
         sliderInterval.current = setInterval(() => {
@@ -38,13 +46,37 @@ export default function Welcome({
         return () => clearInterval(sliderInterval.current);
     }, [slider]);
 
-    // زاویه چرخش دایره‌ای
     const itemCount = circleItems.length - 1;
     const itemAngle = 360 / itemCount;
     // const angleOffset = -itemAngle * currentSlide;
 
     const anglePerItem = 360 / (circleItems.length - 1);
-    const angleOffset = 180 - anglePerItem * currentSlide;
+    const angleOffset =
+        window.innerWidth >= 1280
+            ? 180 - anglePerItem * currentSlide
+            : 270 - anglePerItem * currentSlide;
+
+    useEffect(() => {
+        const handleResize = () => {
+            setRadius(
+                window.innerWidth >= 1280
+                    ? 240
+                    : window.innerWidth >= 768
+                    ? 180
+                    : window.innerWidth >= 475
+                    ? 100
+                    : 80
+            );
+        };
+
+        window.addEventListener("resize", handleResize);
+
+        handleResize();
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }, []);
 
     return (
         <AppLayout auth={auth} headerData={headerData}>
@@ -52,14 +84,14 @@ export default function Welcome({
                 <Head title="Ariyabod Companies Group" />
 
                 <div
-                    className="h-[780px] bg-[#97c3b9] bg-cover bg-center pt-[10px]"
+                    className={`h-[780px] bg-[#97c3b9] bg-cover bg-center ${headerData && headerData.status ? "pt-[80px]" : "pt-[10px]"}`}
                     style={{
                         backgroundImage: `url("/images/ChatGPT%20Image%20May%2012,%202025,%2010_08_55%20AM%20(3).png")`,
                     }}
                 >
-                    <div className="flex items-center h-full w-full mr-[68px]">
+                    <div className="flex flex-col-reverse  pt-20 pb-10 md2:pt-0 md2:pb-0 md2:flex-row items-center h-full w-full md2:pr-[68px] gap-4">
                         {/* دایره سمت چپ */}
-                        <div className="flex items-center h-full bg-blue-50">
+                        <div className="flex items-center h-full ">
                             <div id="circle" className="dashed-circle relative">
                                 <svg
                                     className="absolute"
@@ -77,11 +109,12 @@ export default function Welcome({
                                     />
                                 </svg>
 
-                                <div className="bg-[#428b7c] rounded-full w-[460px] h-[460px] absolute top-0 left-0 bottom-0 right-0 m-auto flex items-center justify-center">
+                                <div className="bg-[#428b7c] rounded-full w-[130px] h-[130px] xs2:w-[180px] xs2:h-[180px] md:w-[300px] md:h-[300px] xl:w-[460px] xl:h-[460px] absolute top-0 left-0 bottom-0 right-0 m-auto flex items-center justify-center">
                                     <img
                                         src={
-                                            circleItems[0].order === 0 &&
-                                            circleItems[0].image
+                                            circleItems.find(
+                                                (item) => item.order === 0
+                                            ).image
                                         }
                                         alt="logo"
                                         className="w-2/3 mb-6 ml-2"
@@ -101,7 +134,6 @@ export default function Welcome({
                                         .sort((a, b) => a.order - b.order)
                                         .map((item, i) => {
                                             const angle = itemAngle * i;
-                                            const radius = 245;
                                             const x =
                                                 radius *
                                                 Math.cos(
@@ -116,10 +148,10 @@ export default function Welcome({
                                             return (
                                                 <div
                                                     key={i + 1}
-                                                    className="w-[150px] h-[150px] bg-[#1eecc3] rounded-full absolute flex items-center justify-center text-center"
+                                                    className="circle-item w-[60px] h-[60px] xs2:w-[85px] xs2:h-[85px] md:w-[120px] md:h-[120px] xl:w-[150px] xl:h-[150px] bg-[#1eecc3] rounded-full flex items-center justify-center text-center"
                                                     style={{
-                                                        top: `calc(50% + ${y}px - 75px)`,
-                                                        left: `calc(50% + ${x}px - 75px)`,
+                                                        "--x": `${x}px`,
+                                                        "--y": `${y}px`,
                                                     }}
                                                 >
                                                     <div
@@ -142,7 +174,7 @@ export default function Welcome({
                                                         <img
                                                             src={item.image}
                                                             alt={item.title}
-                                                            className="w-[110px] object-cover"
+                                                            className="w-[60px] md:w-[80px] xl:w-[130px] object-cover"
                                                         />
                                                     </div>
                                                 </div>
@@ -153,7 +185,7 @@ export default function Welcome({
                         </div>
 
                         {/* اسلایدر سمت راست */}
-                        <div className="w-full">
+                        <div className="w-full px-4 sm:px-0">
                             <div
                                 ref={sliderRef}
                                 className="keen-slider"
@@ -169,7 +201,13 @@ export default function Welcome({
                                                 index + 1
                                             } flex items-center justify-center`}
                                         >
-                                            <p className="text-3xl font-semibold text-center text-white w-[450px]">
+                                            <p
+                                                className="text-2xl xs2:text-3xl font-semibold text-center text-white w-auto xs2:w-[550px] xl:w-[650px]"
+                                                style={{
+                                                    textShadow:
+                                                        "2px 2px 4px rgba(0, 0, 0, 0.5)",
+                                                }}
+                                            >
                                                 {item.title}
                                             </p>
                                         </div>

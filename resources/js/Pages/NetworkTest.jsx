@@ -19,13 +19,32 @@ export default function NetworkTest({ auth, headerData }) {
     const [testPhase, setTestPhase] = useState(null); // 'ping', 'download', 'upload'
     const [currentSpeed, setCurrentSpeed] = useState(0);
     const [targetSpeed, setTargetSpeed] = useState(0);
+    const [showServerSection, setShowServerSection] = useState(false);
+    const [showTestInterface, setShowTestInterface] = useState(false); // New state to control visibility
     const apiKey = import.meta.env.VITE_IP_API_KEY;
 
     // اندازه‌گیری شبکه
     const measureNetwork = async () => {
+        if (!showTestInterface) {
+            // First show the interface with animation, then start test
+            setShowTestInterface(true);
+            // Wait for animation to complete
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+
         setIsTesting(true);
         setTargetSpeed(0);
         setCurrentSpeed(0);
+        setShowServerSection(false);
+
+        // Reset all previous test results
+        setPing(null);
+        setDownload(null);
+        setUpload(null);
+        setIP(null);
+        setLocation(null);
+        setServer("SpeedTest Local Node");
+        setCountry(null);
 
         // Ping Test - Multiple targets
         setTestPhase("ping");
@@ -34,7 +53,7 @@ export default function NetworkTest({ auth, headerData }) {
         const pingTargets = [
             "https://www.google.com",
             "https://www.cloudflare.com",
-            "https://www.amazon.com"
+            "https://www.amazon.com",
         ];
 
         for (let i = 0; i < pingCount; i++) {
@@ -43,7 +62,7 @@ export default function NetworkTest({ auth, headerData }) {
             try {
                 await fetch(`${target}?t=${Date.now()}`, {
                     mode: "no-cors",
-                    cache: "no-store"
+                    cache: "no-store",
                 });
                 const end = performance.now();
                 pingSum += end - start;
@@ -77,8 +96,14 @@ export default function NetworkTest({ auth, headerData }) {
             try {
                 // Use smaller files for testing but maintain progression
                 const downloadFiles = [
-                    { url: "https://speed.cloudflare.com/100kb.bin", size: 100 * 1024 },
-                    { url: "https://speed.cloudflare.com/1mb.bin", size: 1 * 1024 * 1024 }
+                    {
+                        url: "https://speed.cloudflare.com/100kb.bin",
+                        size: 100 * 1024,
+                    },
+                    {
+                        url: "https://speed.cloudflare.com/1mb.bin",
+                        size: 1 * 1024 * 1024,
+                    },
                 ];
 
                 let totalBytes = 0;
@@ -89,7 +114,7 @@ export default function NetworkTest({ auth, headerData }) {
                     const sampleStart = performance.now();
                     const sampleResponse = await fetch(downloadFiles[0].url, {
                         cache: "no-store",
-                        headers: { 'Cache-Control': 'no-cache' }
+                        headers: { "Cache-Control": "no-cache" },
                     });
 
                     if (sampleResponse.ok) {
@@ -99,9 +124,12 @@ export default function NetworkTest({ auth, headerData }) {
 
                         if (sampleTime > 0) {
                             // Calculate a preliminary speed estimate to guide the animation
-                            const sampleSize = blob.size || downloadFiles[0].size;
-                            const sampleSpeedBps = sampleSize * 8 / (sampleTime / 1000);
-                            const sampleSpeedMbps = sampleSpeedBps / (1024 * 1024);
+                            const sampleSize =
+                                blob.size || downloadFiles[0].size;
+                            const sampleSpeedBps =
+                                (sampleSize * 8) / (sampleTime / 1000);
+                            const sampleSpeedMbps =
+                                sampleSpeedBps / (1024 * 1024);
                             // Update the global variable to influence animation max
                             downloadSpeedMbps = sampleSpeedMbps;
                         }
@@ -112,18 +140,23 @@ export default function NetworkTest({ auth, headerData }) {
 
                 for (const file of downloadFiles) {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const timeoutId = setTimeout(
+                        () => controller.abort(),
+                        5000
+                    );
 
                     try {
                         const start = performance.now();
                         const response = await fetch(file.url, {
                             cache: "no-store",
-                            headers: { 'Cache-Control': 'no-cache' },
-                            signal: controller.signal
+                            headers: { "Cache-Control": "no-cache" },
+                            signal: controller.signal,
                         });
 
                         if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
+                            throw new Error(
+                                `HTTP error! status: ${response.status}`
+                            );
                         }
 
                         const blob = await response.blob();
@@ -131,11 +164,12 @@ export default function NetworkTest({ auth, headerData }) {
 
                         const fileSize = blob.size || file.size;
                         totalBytes += fileSize;
-                        totalTime += (end - start);
+                        totalTime += end - start;
 
                         // Progressive update of download speed for more accurate animation
                         if (totalTime > 0) {
-                            const currentSpeedBps = totalBytes * 8 / (totalTime / 1000);
+                            const currentSpeedBps =
+                                (totalBytes * 8) / (totalTime / 1000);
                             downloadSpeedMbps = currentSpeedBps / (1024 * 1024);
                         }
                     } finally {
@@ -144,7 +178,8 @@ export default function NetworkTest({ auth, headerData }) {
                 }
 
                 if (totalTime > 0) {
-                    const downloadSpeedBps = totalBytes * 8 / (totalTime / 1000);
+                    const downloadSpeedBps =
+                        (totalBytes * 8) / (totalTime / 1000);
                     downloadSpeedMbps = downloadSpeedBps / (1024 * 1024);
                 } else {
                     downloadSpeedMbps = 10 + Math.random() * 10; // Reduced range for fallback
@@ -165,10 +200,10 @@ export default function NetworkTest({ auth, headerData }) {
         const downloadAnimation = async () => {
             // We'll dynamically adjust these stages based on measured speed
             let stages = [
-                { duration: 2000, max: 0, oscillation: 1 },      // Initial ramp up (max will be set dynamically)
-                { duration: 4000, max: 0, oscillation: 2 },      // Mid range speeds
-                { duration: 6000, max: 0, oscillation: 3 },      // High speeds
-                { duration: 2000, max: 0, oscillation: 1.5 }     // Final adjustment
+                { duration: 2000, max: 0, oscillation: 1 }, // Initial ramp up (max will be set dynamically)
+                { duration: 4000, max: 0, oscillation: 2 }, // Mid range speeds
+                { duration: 6000, max: 0, oscillation: 3 }, // High speeds
+                { duration: 2000, max: 0, oscillation: 1.5 }, // Final adjustment
             ];
 
             // Default starting values that will be adjusted based on measurements
@@ -184,11 +219,17 @@ export default function NetworkTest({ auth, headerData }) {
                 const elapsed = now - downloadStartTime;
 
                 // Update speed estimation based on real measurements
-                if (downloadSpeedMbps > 0 && downloadSpeedMbps !== lastMeasuredSpeed) {
+                if (
+                    downloadSpeedMbps > 0 &&
+                    downloadSpeedMbps !== lastMeasuredSpeed
+                ) {
                     lastMeasuredSpeed = downloadSpeedMbps;
 
                     // Calculate a realistic max speed for animation (add some margin but don't exaggerate)
-                    baseMaxSpeed = Math.min(Math.max(downloadSpeedMbps * 1.3, 10), 100);
+                    baseMaxSpeed = Math.min(
+                        Math.max(downloadSpeedMbps * 1.3, 10),
+                        100
+                    );
 
                     // Adjust all stages based on the measured speed
                     stages = stages.map((stage, index) => {
@@ -196,7 +237,7 @@ export default function NetworkTest({ auth, headerData }) {
                         const stageMultiplier = [0.4, 0.7, 1.0, 0.9][index];
                         return {
                             ...stage,
-                            max: baseMaxSpeed * stageMultiplier
+                            max: baseMaxSpeed * stageMultiplier,
                         };
                     });
                 }
@@ -211,21 +252,33 @@ export default function NetworkTest({ auth, headerData }) {
 
                 // Calculate simulated speed based on current stage
                 const stage = stages[currentStage];
-                const stageProgress = Math.min(1, (now - stageStartTime) / stage.duration);
+                const stageProgress = Math.min(
+                    1,
+                    (now - stageStartTime) / stage.duration
+                );
 
                 // In last stage, gradually converge to the real measured speed if available
-                if (currentStage === stages.length - 1 && downloadSpeedMbps > 0) {
+                if (
+                    currentStage === stages.length - 1 &&
+                    downloadSpeedMbps > 0
+                ) {
                     // More aggressively converge to actual speed in final stage
-                    simulatedSpeed = simulatedSpeed + (downloadSpeedMbps - simulatedSpeed) * 0.2;
+                    simulatedSpeed =
+                        simulatedSpeed +
+                        (downloadSpeedMbps - simulatedSpeed) * 0.2;
                 } else {
                     // Normal animation for earlier stages
                     // Add randomness for realism
-                    simulatedSpeed += (Math.random() * stage.oscillation) - (stage.oscillation / 2);
+                    simulatedSpeed +=
+                        Math.random() * stage.oscillation -
+                        stage.oscillation / 2;
 
                     // Ensure speed stays within stage limits with progressive increase
                     const targetForStage = stageProgress * stage.max;
-                    if (simulatedSpeed < targetForStage - 10) simulatedSpeed += 2;
-                    if (simulatedSpeed > targetForStage + 10) simulatedSpeed -= 1;
+                    if (simulatedSpeed < targetForStage - 10)
+                        simulatedSpeed += 2;
+                    if (simulatedSpeed > targetForStage + 10)
+                        simulatedSpeed -= 1;
                 }
 
                 // Clamp values to be realistic
@@ -288,13 +341,16 @@ export default function NetworkTest({ auth, headerData }) {
                         const smallBlob = new Blob([smallData]);
 
                         const formData = new FormData();
-                        formData.append('file', smallBlob, 'sample.bin');
+                        formData.append("file", smallBlob, "sample.bin");
 
                         const sampleStart = performance.now();
-                        const response = await fetch('https://httpbin.org/post', {
-                            method: 'POST',
-                            body: formData
-                        });
+                        const response = await fetch(
+                            "https://httpbin.org/post",
+                            {
+                                method: "POST",
+                                body: formData,
+                            }
+                        );
 
                         if (response.ok) {
                             const sampleEnd = performance.now();
@@ -302,8 +358,10 @@ export default function NetworkTest({ auth, headerData }) {
 
                             if (sampleTime > 0) {
                                 // Calculate preliminary upload speed to guide animation
-                                const sampleSpeedBps = smallSize * 8 / (sampleTime / 1000);
-                                uploadSpeedMbps = sampleSpeedBps / (1024 * 1024);
+                                const sampleSpeedBps =
+                                    (smallSize * 8) / (sampleTime / 1000);
+                                uploadSpeedMbps =
+                                    sampleSpeedBps / (1024 * 1024);
                             }
                         }
                     } catch (error) {
@@ -311,28 +369,37 @@ export default function NetworkTest({ auth, headerData }) {
                     }
 
                     const formData = new FormData();
-                    formData.append('file', blob, 'speedtest.bin');
+                    formData.append("file", blob, "speedtest.bin");
 
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    const timeoutId = setTimeout(
+                        () => controller.abort(),
+                        10000
+                    );
 
                     try {
                         const start = performance.now();
-                        const response = await fetch('https://httpbin.org/post', {
-                            method: 'POST',
-                            body: formData,
-                            signal: controller.signal
-                        });
+                        const response = await fetch(
+                            "https://httpbin.org/post",
+                            {
+                                method: "POST",
+                                body: formData,
+                                signal: controller.signal,
+                            }
+                        );
 
                         if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
+                            throw new Error(
+                                `HTTP error! status: ${response.status}`
+                            );
                         }
 
                         const end = performance.now();
                         const uploadTime = end - start;
 
                         if (uploadTime > 0) {
-                            const uploadSpeedBps = size * 8 / (uploadTime / 1000);
+                            const uploadSpeedBps =
+                                (size * 8) / (uploadTime / 1000);
                             uploadSpeedMbps = uploadSpeedBps / (1024 * 1024);
                         } else {
                             uploadSpeedMbps = 3 + Math.random() * 3; // More realistic fallback
@@ -355,10 +422,10 @@ export default function NetworkTest({ auth, headerData }) {
             const uploadAnimation = async () => {
                 // These will be dynamically adjusted based on measured speed
                 let stages = [
-                    { duration: 3000, max: 0, oscillation: 0.8 },    // Initial ramp up
-                    { duration: 4000, max: 0, oscillation: 1.2 },    // Mid range speeds
-                    { duration: 5000, max: 0, oscillation: 1.5 },    // High speeds
-                    { duration: 2000, max: 0, oscillation: 0.8 }     // Final adjustment
+                    { duration: 3000, max: 0, oscillation: 0.8 }, // Initial ramp up
+                    { duration: 4000, max: 0, oscillation: 1.2 }, // Mid range speeds
+                    { duration: 5000, max: 0, oscillation: 1.5 }, // High speeds
+                    { duration: 2000, max: 0, oscillation: 0.8 }, // Final adjustment
                 ];
 
                 // Default starting values that will be adjusted based on measurements
@@ -374,18 +441,24 @@ export default function NetworkTest({ auth, headerData }) {
                     const elapsed = now - uploadStartTime;
 
                     // Update speed estimation based on real measurements
-                    if (uploadSpeedMbps > 0 && uploadSpeedMbps !== lastMeasuredSpeed) {
+                    if (
+                        uploadSpeedMbps > 0 &&
+                        uploadSpeedMbps !== lastMeasuredSpeed
+                    ) {
                         lastMeasuredSpeed = uploadSpeedMbps;
 
                         // Calculate a realistic max speed for animation
-                        baseMaxSpeed = Math.min(Math.max(uploadSpeedMbps * 1.3, 5), 40);
+                        baseMaxSpeed = Math.min(
+                            Math.max(uploadSpeedMbps * 1.3, 5),
+                            40
+                        );
 
                         // Adjust all stages based on the measured speed
                         stages = stages.map((stage, index) => {
                             const stageMultiplier = [0.4, 0.7, 1.0, 0.9][index];
                             return {
                                 ...stage,
-                                max: baseMaxSpeed * stageMultiplier
+                                max: baseMaxSpeed * stageMultiplier,
                             };
                         });
                     }
@@ -400,20 +473,32 @@ export default function NetworkTest({ auth, headerData }) {
 
                     // Calculate simulated speed based on current stage
                     const stage = stages[currentStage];
-                    const stageProgress = Math.min(1, (now - stageStartTime) / stage.duration);
+                    const stageProgress = Math.min(
+                        1,
+                        (now - stageStartTime) / stage.duration
+                    );
 
                     // In last stage, gradually converge to the real measured speed if available
-                    if (currentStage === stages.length - 1 && uploadSpeedMbps > 0) {
+                    if (
+                        currentStage === stages.length - 1 &&
+                        uploadSpeedMbps > 0
+                    ) {
                         // More aggressively converge to actual speed in final stage
-                        simulatedSpeed = simulatedSpeed + (uploadSpeedMbps - simulatedSpeed) * 0.2;
+                        simulatedSpeed =
+                            simulatedSpeed +
+                            (uploadSpeedMbps - simulatedSpeed) * 0.2;
                     } else {
                         // Add randomness for realism
-                        simulatedSpeed += (Math.random() * stage.oscillation) - (stage.oscillation / 2);
+                        simulatedSpeed +=
+                            Math.random() * stage.oscillation -
+                            stage.oscillation / 2;
 
                         // Ensure speed stays within stage limits with progressive increase
                         const targetForStage = stageProgress * stage.max;
-                        if (simulatedSpeed < targetForStage - 5) simulatedSpeed += 1;
-                        if (simulatedSpeed > targetForStage + 5) simulatedSpeed -= 0.5;
+                        if (simulatedSpeed < targetForStage - 5)
+                            simulatedSpeed += 1;
+                        if (simulatedSpeed > targetForStage + 5)
+                            simulatedSpeed -= 0.5;
                     }
 
                     // Clamp values to be realistic
@@ -460,7 +545,7 @@ export default function NetworkTest({ auth, headerData }) {
             } catch (e) {
                 console.error("IP geolocation error:", e);
                 try {
-                    const res = await fetch('https://ipapi.co/json/');
+                    const res = await fetch("https://ipapi.co/json/");
                     const data = await res.json();
                     setIP(data.ip);
                     setLocation(data.city);
@@ -476,6 +561,7 @@ export default function NetworkTest({ auth, headerData }) {
             } finally {
                 setIsTesting(false);
                 setTestPhase(null);
+                setShowServerSection(true);
             }
         };
     };
@@ -648,30 +734,154 @@ export default function NetworkTest({ auth, headerData }) {
         <AppLayout auth={auth} headerData={headerData}>
             <Head title="Network Speed Test" />
 
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center px-4">
-                <h1 className="text-3xl font-bold mb-4 mt-[120px]">
+            <div className="flex flex-col items-center justify-start min-h-screen bg-gray-50 text-center px-4">
+                <h1 className="text-3xl font-bold mb-14 mt-[120px]">
                     آزمایش سرعت
                 </h1>
 
-                <div className="w-full">
+                {/* Add CSS for smooth animations */}
+                <style jsx>{`
+                    .test-section {
+                        opacity: 0;
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: opacity 0.5s ease, max-height 0.5s ease;
+                    }
+                    .test-section.visible {
+                        opacity: 1;
+                        max-height: 1000px;
+                    }
+                `}</style>
+
+                {!showTestInterface && (
+                    <button
+                        onClick={measureNetwork}
+                        disabled={isTesting}
+                        className="my-6 px-8 py-3 primary text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
+                    >
+                        شروع تست
+                    </button>
+                )}
+
+                <div className={`w-full space-y-8 test-section ${showTestInterface ? 'visible' : ''}`}>
+                    {/* Performance section  */}
                     <table className="w-[60%] mx-auto border-collapse">
                         <thead>
                             <tr className="border-y border-gray-200">
-                                <th className="text-lg font-semibold py-2">Ping</th>
-                                <th className="text-lg font-semibold py-2">Download</th>
-                                <th className="text-lg font-semibold py-2">Upload</th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%]">
+                                    Ping
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%]">
+                                    Download
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%]">
+                                    Upload
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td
+                                    className={`text-lg relative font-semibold py-2 ${
+                                        testPhase === "ping"
+                                            ? "text-green-500"
+                                            : "text-gray-700"
+                                    }`}
+                                >
+                                    {testPhase === "ping" && !ping && (
+                                        <div className="middle mt-5">
+                                            <div className="bar bar1"></div>
+                                            <div className="bar bar2"></div>
+                                            <div className="bar bar3"></div>
+                                            <div className="bar bar4"></div>
+                                            <div className="bar bar5"></div>
+                                            <div className="bar bar6"></div>
+                                            <div className="bar bar7"></div>
+                                            <div className="bar bar8"></div>
+                                        </div>
+                                    )}
+                                    {ping ? `${ping} ms` : ""}
+                                </td>
+                                <td
+                                    className={`text-lg relative font-semibold py-2 ${
+                                        testPhase === "download"
+                                            ? "text-green-500"
+                                            : "text-gray-700"
+                                    }`}
+                                >
+                                    {testPhase === "download" && !download && (
+                                        <div className="middle pt-3">
+                                             <div className="bar bar1"></div>
+                                            <div className="bar bar2"></div>
+                                            <div className="bar bar3"></div>
+                                            <div className="bar bar4"></div>
+                                            <div className="bar bar5"></div>
+                                            <div className="bar bar6"></div>
+                                            <div className="bar bar7"></div>
+                                            <div className="bar bar8"></div>
+                                        </div>
+                                    )}
+                                    {download ? `${download} Mbps` : ""}
+                                </td>
+                                <td
+                                    className={`text-lg relative font-semibold py-2 ${
+                                        testPhase === "upload"
+                                            ? "text-green-500"
+                                            : "text-gray-700"
+                                    }`}
+                                >
+                                    {testPhase === "upload" && !upload && (
+                                        <div className="middle pt-3">
+                                            <div className="bar bar1"></div>
+                                            <div className="bar bar2"></div>
+                                            <div className="bar bar3"></div>
+                                            <div className="bar bar4"></div>
+                                            <div className="bar bar5"></div>
+                                            <div className="bar bar6"></div>
+                                            <div className="bar bar7"></div>
+                                            <div className="bar bar8"></div>
+                                        </div>
+                                    )}
+                                    {upload ? `${upload} Mbps` : ""}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    {/* Canvas section - hidden when test is completed */}
+                    <div className={`relative mb-6 w-full max-w-md mx-auto ${(!isTesting && ping && download && upload) ? "hidden" : ""}`}>
+                        <canvas ref={canvasRef} className="w-full aspect-square" />
+                    </div>
+
+                    {/* Server section  */}
+                    <table
+                        className={`w-[60%] mx-auto border-collapse ${
+                            showServerSection ? "" : "hidden"
+                        }`}
+                    >
+                        <thead>
+                            <tr className="border-y border-gray-200">
+                                <th className="text-lg font-semibold py-2 w-[33.3%]">
+                                    IP
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%]">
+                                    Location
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%]">
+                                    Server
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td
                                     className={`text-lg font-semibold py-2 ${
-                                        testPhase === "ping"
+                                        testPhase === "ip"
                                             ? "text-green-500"
                                             : "text-gray-700"
                                     }`}
                                 >
-                                    {ping ? `${ping} ms` : "..."}
+                                    {ip || "..."}
                                 </td>
                                 <td
                                     className={`text-lg font-semibold py-2 ${
@@ -680,7 +890,7 @@ export default function NetworkTest({ auth, headerData }) {
                                             : "text-gray-700"
                                     }`}
                                 >
-                                    {download ? `${download} Mbps` : "..."}
+                                    {location || "..."}
                                 </td>
                                 <td
                                     className={`text-lg font-semibold py-2 ${
@@ -689,82 +899,22 @@ export default function NetworkTest({ auth, headerData }) {
                                             : "text-gray-700"
                                     }`}
                                 >
-                                    {upload ? `${upload} Mbps` : "..."}
+                                    {server || "..."}
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div className="relative mb-6 w-full max-w-md">
-                    <canvas ref={canvasRef} className="w-full aspect-square" />
-                </div>
-
-                <button
-                    onClick={measureNetwork}
-                    disabled={isTesting}
-                    className="mb-6 px-8 py-3 bg-green-500 text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
-                >
-                    {isTesting ? "در حال تست..." : "شروع تست"}
-                </button>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg whitespace-pre-wrap max-w-2xl w-full">
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <strong
-                            className={`${
-                                testPhase === "ping"
-                                    ? "text-green-500"
-                                    : "text-gray-700"
-                            } transition-colors duration-300`}
-                        >
-                            Ping:
-                        </strong>{" "}
-                        {ping ? `${ping} ms` : "..."}
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <strong
-                            className={`${
-                                testPhase === "download"
-                                    ? "text-green-500"
-                                    : "text-gray-700"
-                            } transition-colors duration-300`}
-                        >
-                            Download:
-                        </strong>{" "}
-                        {download ? `${download} Mbps` : "..."}
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <strong
-                            className={`${
-                                testPhase === "upload"
-                                    ? "text-green-500"
-                                    : "text-gray-700"
-                            } transition-colors duration-300`}
-                        >
-                            Upload:
-                        </strong>{" "}
-                        {upload ? `${upload} Mbps` : "..."}
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <strong className="text-gray-700">IP:</strong>{" "}
-                        {ip || "..."}
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <strong className="text-gray-700">Location:</strong>{" "}
-                        {location || "..."}
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <div className="flex gap-1">
-                            <strong className="text-gray-700">Server:</strong>
-                            <div>
-                                <div className="">{server} </div>
-                                <div className="text-sm text-gray-600">
-                                    {country}{" "}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {showTestInterface && (
+                    <button
+                        onClick={measureNetwork}
+                        disabled={isTesting}
+                        className="my-6 px-8 py-3 primary text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
+                    >
+                        {isTesting ? "در حال تست..." : "شروع"}
+                    </button>
+                )}
             </div>
         </AppLayout>
     );

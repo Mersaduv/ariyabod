@@ -17,8 +17,6 @@ export default function AppLayout({ children, auth = {}, headerData }) {
         document.body.classList.toggle("farsi-digits", isRtl);
     }, [i18n.language]);
 
-    console.log(headerData, "headerData");
-
     return (
         <div className="min-h-screen flex flex-col">
             <div className="fixed top-0 left-0 right-0 z-50">

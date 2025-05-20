@@ -9,13 +9,14 @@ const CustomCheckbox = forwardRef(function CustomCheckboxComponent(props, ref) {
         customStyle,
         isNormal,
         inLabel,
+        statusClass,
     } = props;
 
     return (
         <div
             className={`flex items-center justify-between ${
                 customStyle ? "" : "py-2.5"
-            } ${inLabel ? "" : "w-full"}`}
+            } ${inLabel ? "" : `${statusClass ? statusClass : "w-full"} `}`}
         >
             {/* {inLabel ? null : (
         <span className="w-3/4 font-medium text-gray-700">{label}</span>

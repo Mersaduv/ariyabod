@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
         // \App\Models\User::factory(10)->create();
         $this->call(AdminUserSeeder::class);
         $this->call(VisitSeeder::class);
-
+        $this->call(InternetPackageSeeder::class);
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',

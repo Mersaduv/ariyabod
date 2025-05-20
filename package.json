@@ -25,6 +25,8 @@
         "@tiptap/extension-text-align": "^2.12.0",
         "@tiptap/react": "^2.12.0",
         "@tiptap/starter-kit": "^2.12.0",
+        "aos": "^2.3.4",
+        "canvas-gauges": "^2.1.7",
         "date-fns": "^4.1.0",
         "i18next": "^25.1.1",
         "keen-slider": "^6.8.6",

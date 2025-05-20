@@ -64,7 +64,7 @@ export default function HeaderForm({ headerData, message }) {
                 <InputLabel value={t("header_form.header_color")} />
                 <TextInput
                     type="color"
-                    className="w-full"
+                    className="w-[50px] h-[50px] rounded-lg appearance-none border-none"
                     value={data.header_color}
                     onChange={(e) => setData("header_color", e.target.value)}
                 />

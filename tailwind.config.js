@@ -18,6 +18,7 @@ export default {
             md: "768px",
             md2: "980px",
             lg: "1024px",
+            lg1: "1100px",
             lg2: "1170px",
             sxl: "1200px",
             xl: "1280px",
@@ -41,10 +42,19 @@ export default {
                     "0%": { opacity: 0, transform: "translateY(-20%)" },
                     "100%": { opacity: 1, transform: "translateY(0)" },
                 },
+                fadeIn: {
+                    "0%": { opacity: 0, transform: "scale(0.95)" },
+                    "100%": { opacity: 1, transform: "scale(1)" },
+                },
+                spinSlow: {
+                    "0%": { transform: "rotate(0deg)" },
+                    "100%": { transform: "rotate(360deg)" },
+                },
             },
             animation: {
                 slideDown: "slideDown 0.4s ease-out forwards",
                 "fade-slide": "fadeSlide 0.4s ease-out",
+                "spin-slow": "spinSlow 4s linear infinite",
             },
         },
     },

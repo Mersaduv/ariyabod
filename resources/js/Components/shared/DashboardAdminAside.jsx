@@ -40,7 +40,7 @@ const menuItems = [
     },
     {
         id: 5,
-        name: "internet_packages",
+        name: "internet_packages_item",
         Icon: BsBoxes,
         path: ["/admin/internet-packages"],
     },

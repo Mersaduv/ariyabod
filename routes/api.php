@@ -17,3 +17,16 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+Route::get('/ping', function () {
+    return response()->json(['pong' => true]);
+});
+
+Route::get('/download-test', function () {
+    return response()->file(public_path('test/big-file.bin'));
+});
+
+Route::post('/upload-test', function (Request $request) {
+    return response()->json(['success' => true]);
+});

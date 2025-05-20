@@ -69,7 +69,7 @@ export default function Header({ auth }) {
                                     }  bg-[#2c5f59] text-white rounded-md shadow-md opacity-0 group-hover:opacity-100 invisible group-hover:visible transition duration-200 w-[250px] z-50`}
                                 >
                                     <Link
-                                        href="#"
+                                        href="/network-test"
                                         className="block px-4 py-2 hover:text-[#4adcbf]"
                                     >
                                         <div className="mb-[6px] mt-[1px]">
@@ -277,7 +277,7 @@ export default function Header({ auth }) {
                                 <div className="flex flex-col space-y-2 pt-1 px-2 mb-1">
                                     <hr />
                                     <Link
-                                        href="#"
+                                        href="/network-test"
                                         className="hover:text-[#4adcbf] text-sm"
                                     >
                                         {t("nav.tools.speedTest.title")}

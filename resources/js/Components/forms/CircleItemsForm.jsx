@@ -28,7 +28,7 @@ export default function CircleItemsForm({ circleItems = [], message }) {
             ? circleItems
             : [
                   {
-                      title: "",
+                      title: { fa: "", en: "", ps: "" },
                       link: "",
                       image: "",
                       status: true,
@@ -46,7 +46,7 @@ export default function CircleItemsForm({ circleItems = [], message }) {
         setData("items", [
             ...data.items,
             {
-                title: "",
+                title: { fa: "", en: "", ps: "" },
                 link: "",
                 image: "",
                 status: true,
@@ -65,13 +65,25 @@ export default function CircleItemsForm({ circleItems = [], message }) {
 
     const handleChange = (index, field, value) => {
         const updatedItems = [...data.items];
-        updatedItems[index][field] = value;
+        if (field === "title") {
+            updatedItems[index].title = {
+                ...updatedItems[index].title,
+                ...value,
+            };
+        } else {
+            updatedItems[index][field] = value;
+        }
         setData("items", updatedItems);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route("admin.site-items.store"), { preserveScroll: true });
+        post(route("admin.site-items.store"), {
+            preserveScroll: true,
+            headers: {
+                "X-Lang": localStorage.getItem("lang") || "fa",
+            },
+        });
     };
 
     useInertiaResponseHandler({
@@ -83,9 +95,19 @@ export default function CircleItemsForm({ circleItems = [], message }) {
     console.log(data.items, "data.items");
     return (
         <form onSubmit={handleSubmit}>
-            <h1 className="text-2xl font-bold -mt-2 mb-4">
-                {t("circle_items.title")}
-            </h1>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold -mt-2 mb-4">
+                    {t("circle_items.title")}
+                </h1>
+                <div>
+                    <CustomCheckbox
+                        label={t("circle_items.is_enabled")}
+                        name="status"
+                        checked={data.status}
+                        onChange={(e) => setData("status", e.target.checked)}
+                    />
+                </div>
+            </div>
             <div className="flex justify-center flex-wrap gap-6">
                 {[...data.items]
                     .sort((a, b) => a.order - b.order)
@@ -100,25 +122,55 @@ export default function CircleItemsForm({ circleItems = [], message }) {
                                     handleChange(index, "image", url)
                                 }
                                 error={errors[`items.${index}.image`]}
+                                className="h-44"
                             />
 
                             <div>
                                 <InputLabel
-                                    value={t("circle_items.fields.title")}
+                                    value={t("circle_items.fields.title_fa")}
                                 />
                                 <TextInput
-                                    value={item.title}
-                                    className="w-full"
+                                    value={item.title?.fa ?? ""}
                                     onChange={(e) =>
-                                        handleChange(
-                                            index,
-                                            "title",
-                                            e.target.value
-                                        )
+                                        handleChange(index, "title", {
+                                            fa: e.target.value,
+                                        })
                                     }
                                 />
                                 <InputError
-                                    message={errors[`items.${index}.title`]}
+                                    message={errors[`items.${index}.title.fa`]}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    value={t("circle_items.fields.title_en")}
+                                />
+                                <TextInput
+                                    value={item.title?.en ?? ""}
+                                    onChange={(e) =>
+                                        handleChange(index, "title", {
+                                            en: e.target.value,
+                                        })
+                                    }
+                                />
+                                <InputError
+                                    message={errors[`items.${index}.title.en`]}
+                                />
+                            </div>
+                            <div>
+                                <InputLabel
+                                    value={t("circle_items.fields.title_ps")}
+                                />
+                                <TextInput
+                                    value={item.title?.ps ?? ""}
+                                    onChange={(e) =>
+                                        handleChange(index, "title", {
+                                            ps: e.target.value,
+                                        })
+                                    }
+                                />
+                                <InputError
+                                    message={errors[`items.${index}.title.ps`]}
                                 />
                             </div>
 
@@ -127,7 +179,7 @@ export default function CircleItemsForm({ circleItems = [], message }) {
                                     value={t("circle_items.fields.link")}
                                 />
                                 <TextInput
-                                    value={item.link}
+                                    value={item.link ?? ""}
                                     className="w-full"
                                     onChange={(e) =>
                                         handleChange(
@@ -179,7 +231,7 @@ export default function CircleItemsForm({ circleItems = [], message }) {
     );
 }
 
-function ImageUpload({ imageUrl, onUpload, error }) {
+function ImageUpload({ imageUrl, onUpload, error, className }) {
     const fileInputRef = useRef(null);
     const { t } = useTranslation();
 
@@ -213,14 +265,16 @@ function ImageUpload({ imageUrl, onUpload, error }) {
                 accept="image/*"
             />
             <div
-                className="h-28 w-full border border-dashed border-gray-300 rounded cursor-pointer flex items-center justify-center overflow-hidden"
+                className={`${
+                    className ? className : "h-28"
+                } w-full border border-dashed border-gray-300 rounded cursor-pointer flex items-center justify-center overflow-hidden`}
                 onClick={handleImageClick}
             >
                 {imageUrl ? (
                     <img
                         src={imageUrl}
                         alt="preview"
-                        className="h-full object-cover w-full"
+                        className="h-full object-contain w-full"
                     />
                 ) : (
                     <span className="text-gray-400">

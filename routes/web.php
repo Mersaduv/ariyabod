@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\Admin\CircleController;
 use App\Http\Controllers\FooterDesignController;
+use App\Http\Controllers\FestivalController;
 use App\Http\Controllers\GeneralDesignController;
+use App\Http\Controllers\InternetPackageWebController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiteItemController;
 use App\Models\Circle;
 use App\Models\CircleItem;
+use App\Models\InternetPackage;
 use App\Models\Setting;
 use App\Models\SiteItem;
 use App\Models\Visit;
@@ -30,7 +33,22 @@ Route::middleware(['log.visit'])->group(function () {
     Route::get('/', function () {
         $headerSetting = Setting::where('key', 'header')->first();
         $circleItems = SiteItem::where('type', 'circle')->get();
+        $servicesItems = SiteItem::where('type', 'service')->get();
         $headerData = $headerSetting ? json_decode($headerSetting->value, true) : [];
+        $internetPackages = InternetPackage::all();
+        // Define provinces list
+        $provincesList = [
+            'kabul' => ['en' => 'Kabul', 'fa' => 'کابل', 'ps' => 'کابل'],
+            'herat' => ['en' => 'Herat', 'fa' => 'هرات', 'ps' => 'هرات'],
+            'mazar' => ['en' => 'Mazar-i-Sharif', 'fa' => 'مزار شریف', 'ps' => 'مزار شریف'],
+            'kandahar' => ['en' => 'Kandahar', 'fa' => 'قندهار', 'ps' => 'کندهار'],
+            'jalalabad' => ['en' => 'Jalalabad', 'fa' => 'جلال آباد', 'ps' => 'جلال آباد'],
+            'kunduz' => ['en' => 'Kunduz', 'fa' => 'کندز', 'ps' => 'کندز'],
+            'ghazni' => ['en' => 'Ghazni', 'fa' => 'غزنی', 'ps' => 'غزني'],
+            'balkh' => ['en' => 'Balkh', 'fa' => 'بلخ', 'ps' => 'بلخ'],
+            'baghlan' => ['en' => 'Baghlan', 'fa' => 'بغلان', 'ps' => 'بغلان'],
+            'bamyan' => ['en' => 'Bamyan', 'fa' => 'بامیان', 'ps' => 'بامیان'],
+        ];
         return Inertia::render('Welcome', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
@@ -38,8 +56,63 @@ Route::middleware(['log.visit'])->group(function () {
             'phpVersion' => PHP_VERSION,
             'headerData' => $headerData,
             'circleItems' => $circleItems,
+            'servicesItems' => $servicesItems,
+            'internetPackages' => $internetPackages,
+            'provinces' => $provincesList,
         ]);
     });
+
+    // Packages route
+    Route::get('/packages', function () {
+        $headerSetting = Setting::where('key', 'header')->first();
+        $headerData = $headerSetting ? json_decode($headerSetting->value, true) : [];
+        $internetPackages = InternetPackage::all();
+
+        // Define provinces list
+        $provincesList = [
+            'kabul' => ['en' => 'Kabul', 'fa' => 'کابل', 'ps' => 'کابل'],
+            'herat' => ['en' => 'Herat', 'fa' => 'هرات', 'ps' => 'هرات'],
+            'mazar' => ['en' => 'Mazar-i-Sharif', 'fa' => 'مزار شریف', 'ps' => 'مزار شریف'],
+            'kandahar' => ['en' => 'Kandahar', 'fa' => 'قندهار', 'ps' => 'کندهار'],
+            'jalalabad' => ['en' => 'Jalalabad', 'fa' => 'جلال آباد', 'ps' => 'جلال آباد'],
+            'kunduz' => ['en' => 'Kunduz', 'fa' => 'کندز', 'ps' => 'کندز'],
+            'ghazni' => ['en' => 'Ghazni', 'fa' => 'غزنی', 'ps' => 'غزني'],
+            'balkh' => ['en' => 'Balkh', 'fa' => 'بلخ', 'ps' => 'بلخ'],
+            'baghlan' => ['en' => 'Baghlan', 'fa' => 'بغلان', 'ps' => 'بغلان'],
+            'bamyan' => ['en' => 'Bamyan', 'fa' => 'بامیان', 'ps' => 'بامیان'],
+        ];
+
+        // Get unique provinces and types for filters
+        $allProvinces = [];
+        foreach ($internetPackages as $package) {
+            if (!empty($package->provinces) && is_array($package->provinces)) {
+                foreach ($package->provinces as $province) {
+                    if (!empty($province) && isset($provincesList[$province])) {
+                        $allProvinces[$province] = $provincesList[$province];
+                    }
+                }
+            }
+        }
+
+        $types = InternetPackage::distinct('type')->whereNotNull('type')->pluck('type');
+
+        return Inertia::render('Packages', [
+            'headerData' => $headerData,
+            'internetPackages' => $internetPackages,
+            'provinces' => $allProvinces,
+            'types' => $types,
+        ]);
+    })->name('packages');
+
+    // Network Test route
+    Route::get('/network-test', function () {
+        $headerSetting = Setting::where('key', 'header')->first();
+        $headerData = $headerSetting ? json_decode($headerSetting->value, true) : [];
+
+        return Inertia::render('NetworkTest', [
+            'headerData' => $headerData,
+        ]);
+    })->name('network-test');
 
     // about, contact
 });
@@ -115,6 +188,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/site-items/upload', [SiteItemController::class, 'upload'])->name('site-items.upload');
 
     Route::delete('/site-items/{siteItem}', [SiteItemController::class, 'destroy'])->name('site-items.destroy');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/internet-packages', [InternetPackageWebController::class, 'index'])->name('internet-packages.index');
+    Route::get('/internet-packages/create', [InternetPackageWebController::class, 'create'])->name('internet-packages.create');
+    Route::post('/internet-packages', [InternetPackageWebController::class, 'store'])->name('internet-packages.store');
+    Route::get('/internet-packages/{internetPackage}/edit', [InternetPackageWebController::class, 'edit'])->name('internet-packages.edit');
+    Route::put('/internet-packages/{internetPackage}', [InternetPackageWebController::class, 'update'])->name('internet-packages.update');
+    Route::delete('/internet-packages/{internetPackage}', [InternetPackageWebController::class, 'destroy'])->name('internet-packages.destroy');
+
+    // Festival routes
+    Route::resource('festivals', FestivalController::class);
+    Route::post('/festivals/{festival}/packages', [FestivalController::class, 'attachPackages'])->name('festivals.packages.attach');
+    Route::delete('/festivals/{festival}/packages/{internetPackage}', [FestivalController::class, 'detachPackage'])->name('festivals.packages.detach');
+    Route::post('/festivals/upload', [FestivalController::class, 'upload'])->name('festivals.upload');
 });
 
 

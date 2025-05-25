@@ -12,9 +12,70 @@ const formatTime = (dateTimeString) => {
     return dateTimeString.substring(11, 16);
 };
 
+// Helper function to format speed based on value
+const formatSpeed = (speedMb, t, lang) => {
+    if (!speedMb && speedMb !== 0) return "";
+
+    // If speed is less than 1 Mb, convert to Kb
+    if (speedMb < 1) {
+        const speedKb = Math.round(speedMb * 1024);
+        return lang === "en"
+            ? `${speedKb} ${t("internet_packages.kb_speed")}`
+            : `${t("internet_packages.kb_speed")} ${speedKb}`;
+    }
+
+    return lang === "en"
+        ? `${speedMb} ${t("internet_packages.mb_speed")}`
+        : `${t("internet_packages.mb_speed")} ${speedMb}`;
+};
+
+// Helper function to convert time to human-readable format
+const formatTimeToHumanReadable = (timeString) => {
+    const lang = localStorage.getItem("lang") || "fa";
+    if (!timeString) return "";
+
+    const hour = parseInt(timeString.substring(0, 2));
+    const minutes = timeString.substring(3, 5);
+
+    const timeTerms = {
+        fa: {
+            night: "شب",
+            morning: "صبح",
+            noon: "ظهر",
+            evening: "عصر"
+        },
+        en: {
+            night: "Night",
+            morning: "AM",
+            noon: "Noon",
+            evening: "PM"
+        },
+        ps: {
+            night: "شپه",
+            morning: "سهار",
+            noon: "غرمه",
+            evening: "مازدیګر"
+        }
+    };
+
+    const terms = timeTerms[lang] || timeTerms.fa;
+
+    if (hour === 0) {
+        return minutes === "00" ? `12 ${terms.night}` : `12:${minutes} ${terms.night}`;
+    } else if (hour < 12) {
+        return minutes === "00" ? `${hour} ${terms.morning}` : `${hour}:${minutes} ${terms.morning}`;
+    } else if (hour === 12) {
+        return minutes === "00" ? `12 ${terms.noon}` : `12:${minutes} ${terms.noon}`;
+    } else {
+        const pmHour = hour - 12;
+        return minutes === "00" ? `${pmHour} ${terms.evening}` : `${pmHour}:${minutes} ${terms.evening}`;
+    }
+};
+
 export default function Packages({
     auth,
     headerData,
+    footerData,
     internetPackages,
     provinces,
     types,
@@ -144,7 +205,7 @@ export default function Packages({
     }, []);
 
     return (
-        <AppLayout auth={auth} headerData={headerData}>
+        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
             <Head title="Internet Packages - Ariyabod Companies Group" />
 
             <div className="py-12 bg-gray-50">
@@ -183,9 +244,7 @@ export default function Packages({
                                             {selectedProvinces.length > 0
                                                 ? `${
                                                       selectedProvinces.length
-                                                  } ${t(
-                                                      "filters.province"
-                                                  )}`
+                                                  } ${t("filters.province")}`
                                                 : t("filters.all_provinces")}
                                         </span>
                                         <FaAngleDown
@@ -380,7 +439,6 @@ export default function Packages({
                                             {/* Type Badge */}
                                             <div className="mb-3">
                                                 <span className="inline-block bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 w-full text-center">
-
                                                     {t(
                                                         `internet_packages.${pkg.type}`
                                                     ) || pkg.type}
@@ -477,10 +535,20 @@ export default function Packages({
                                                         <FaCheck className="text-white text-[15px]" />
                                                     </div>
                                                     <span>
-                                                        {pkg.speed_mb}{" "}
-                                                        {t(
-                                                            "internet_packages.mb_speed"
-                                                        )}
+                                                        {formatSpeed(pkg.speed_mb, t, lang)}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {/* After Daily Limit Speed */}
+                                            {pkg.daily_limit_gb && pkg.after_daily_limit_speed_mb !== undefined && (
+                                                <div className="flex gap-2">
+                                                    <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                        <FaCheck className="text-white text-[15px]" />
+                                                    </div>
+                                                    <span className="text-sm">
+                                                        {t("internet_packages.after_daily_limit")}{" "}
+                                                        {formatSpeed(pkg.after_daily_limit_speed_mb, t, lang)}
                                                     </span>
                                                 </div>
                                             )}
@@ -506,24 +574,14 @@ export default function Packages({
                                                                         <FaCheck className="text-white text-[15px]" />
                                                                     </div>
                                                                     <div className="flex gap-1 items-center">
-                                                                        {"( "}
-                                                                        {slot.from ||
-                                                                            ""}{" "}
-                                                                        <span className="text-gray-600">
-                                                                            -
+                                                                        <span>
+                                                                            {t("internet_packages.from")}{" "}
+                                                                            {formatTimeToHumanReadable(slot.from)}{" "}
+                                                                            {t("internet_packages.to")}{" "}
+                                                                            {formatTimeToHumanReadable(slot.to)}{" "}
+                                                                            {formatSpeed(slot.speed_mb, t, lang)}
                                                                         </span>
-                                                                        {slot.to ||
-                                                                            ""}
-                                                                        {" )"}
                                                                     </div>
-
-                                                                    <span>
-                                                                        {slot.speed_mb ||
-                                                                            ""}{" "}
-                                                                        {t(
-                                                                            "internet_packages.mb_speed"
-                                                                        )}
-                                                                    </span>
                                                                 </div>
                                                             )
                                                         )}
@@ -537,31 +595,14 @@ export default function Packages({
                                                         <FaCheck className="text-white text-[15px]" />
                                                     </div>
                                                     <div className="flex gap-1 items-center">
-                                                        <div className="text-sm flex gap-1 items-center">
-                                                            {"("}
-                                                            {formatTime(
-                                                                pkg.night_free_start_time
-                                                            )}
-                                                            <span className="text-gray-600">
-                                                                -
-                                                            </span>{" "}
-                                                            {formatTime(
-                                                                pkg.night_free_end_time
-                                                            )}
-                                                            {")"}
-                                                        </div>
-                                                        <span className="text-sm whitespace-nowrap">
+                                                        <span className="text-sm">
+                                                            {t("internet_packages.from")}{" "}
+                                                            {formatTimeToHumanReadable(formatTime(pkg.night_free_start_time))}{" "}
+                                                            {t("internet_packages.to")}{" "}
+                                                            {formatTimeToHumanReadable(formatTime(pkg.night_free_end_time))}{" "}
                                                             {pkg.is_night_free
-                                                                ? t(
-                                                                      "internet_packages.free"
-                                                                  )
-                                                                : `${t(
-                                                                      "internet_packages.speed"
-                                                                  )} ${
-                                                                      pkg.night_free_speed_mb
-                                                                  } ${t(
-                                                                      "internet_packages.mb"
-                                                                  )}`}
+                                                                ? t("internet_packages.free")
+                                                                : formatSpeed(pkg.night_free_speed_mb, t, lang)}
                                                         </span>
                                                     </div>
                                                 </div>

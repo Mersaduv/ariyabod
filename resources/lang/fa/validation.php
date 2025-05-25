@@ -17,6 +17,7 @@ return [
         'name' => 'نام',
         'current_password' => 'رمز عبور فعلی',
         'items.*.image' => 'تصویر آیتم',
+        'provinces'=> 'ولایت'
     ],
     'custom' => [
         'current_password' => [

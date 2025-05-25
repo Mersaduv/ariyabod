@@ -18,6 +18,22 @@
     "email_placeholder": "Enter your email",
     "password_placeholder": "Enter your password",
 
+    "contact_us": {
+        "intro_text": "To contact us, please visit our office address or reach out using the details below.",
+        "form_title": "Contact Form",
+        "form_description": "We welcome your feedback, suggestions, and criticism. Please complete the form below.",
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "phone_number": "Phone Number",
+        "message": "Suggestions or Feedback",
+        "send": "Send",
+        "sending": "Sending...",
+        "sending_message": "Your message is being sent...",
+        "message_sent_success": "Your message has been sent successfully",
+        "message_sent_error": "Error sending message. Please try again",
+        "image_alt": "Contact Us"
+    },
+
     "footer": {
         "company_name": "Ariyabod Companies Group",
         "address_label": "Address:",
@@ -110,6 +126,11 @@
     },
     "edit_footer": "Edit site footer",
     "save_footer": "Save Footer",
+    "social_media": "Social Media",
+    "social_media_title": "Title",
+    "social_media_link": "Link",
+    "social_media_image": "Image",
+    "add_social_media": "Add Social Media",
     "circle_items": {
         "title": "Circle Items",
         "enable_circle": "Enable circle items",
@@ -151,7 +172,13 @@
     },
 
     "internet_packages": {
+        "volume_information":"Volume Information",
+        "delete_package": "Delete Internet Package",
+        "delete_package_confirm": "Are you sure you want to delete this internet package?",
+        "yes": "Yes",
+        "cancel": "Cancel",
         "to": "to",
+        "from": "from",
         "packages_title": "Internet Packages",
         "package_description": "We offer stable and fast internet with different speeds and volumes.",
         "main_title": "Internet Packages",
@@ -236,9 +263,12 @@
         "daily_gb": "GB daily",
         "mb": "Mb",
         "mb_speed": "Mb speed",
+        "kb_speed": "Kb speed",
+        "after_daily_limit": "After daily limit ",
         "free": "Free",
         "view_all": "View All",
-        "unlimited_home": "Unlimited monthly packages"
+        "unlimited_home": "Unlimited monthly packages",
+        "at_least_one_province_required": "At least one province must be selected"
     },
 
     "festivals": {
@@ -315,6 +345,40 @@
         "type": "Type",
         "clear_all": "Clear All"
     },
+    "view": "View",
+    "more_info": "More",
+
+    "calculator": {
+        "title": "Package Calculator",
+        "description": "With this tool, you can select the type of calculation, time, volume, and speed to get the desired result.",
+        "note": "Note: ",
+        "note_p1": "Using the first two fields, the third field shows the result.",
+        "note_p2": "Calculate the approximate data transfer time based on your internet speed.",
+        "calculation_type": "Select Calculation Type",
+        "select_type": "Select Type",
+        "calculate_time": "Calculate Time",
+        "calculate_volume": "Calculate Volume",
+        "calculate_speed": "Calculate Speed",
+        "time": "Time",
+        "volume": "Volume",
+        "speed": "Speed",
+        "second": "Second",
+        "minute": "Minute",
+        "hour": "Hour",
+        "MB": "MB",
+        "GB": "GB",
+        "TB": "TB",
+        "Kb": "Kb",
+        "Mb": "Mb",
+        "Gb": "Gb",
+        "time_unit": "Time Unit",
+        "volume_unit": "Volume Unit",
+        "bandwidth_calculator": "Internet Bandwidth Calculator",
+        "start_calculation": "Start Calculation",
+        "result": "Result",
+        "connection_speed": "Connection Speed",
+        "connection_time": "Connection Time"
+    },
 
     "network_test": {
         "title": "Network Speed Test",
@@ -332,6 +396,7 @@
         "ip": "IP Address",
         "location": "Location",
         "server": "Server",
+        "server_name": "SpeedTest Local Node",
         "about_title": "About Network Speed Test",
         "about_p1": "A network speed test measures the performance of your internet connection. It evaluates several key metrics:",
         "ping_term": "Ping",
@@ -340,6 +405,59 @@
         "download_desc": "How quickly data can be transferred from the internet to your device, measured in Mbps.",
         "upload_term": "Upload speed",
         "upload_desc": "How quickly data can be transferred from your device to the internet, measured in Mbps.",
-        "about_p2": "Connection speeds can vary based on many factors including network traffic, time of day, and the number of devices connected to your network."
+        "about_p2": "Connection speeds can vary based on many factors including network traffic, time of day, and the number of devices connected to your network.",
+        "description_long": "This tool has a direct connection with Ariyabod Technology and Internet Services Company and is provided to you solely by the company's software development team to measure the speed and quality of internet connection for Ariyabod subscribers.",
+        "guide_title": "Guide",
+        "guide_description": "For a speed test, consider the following important points and then click the start test button.",
+        "guide_item1": "Make sure your Wi-Fi signal is strong.",
+        "guide_item2": "Before running the test, disconnect any VPN connection to another network.",
+        "guide_item3": "Disconnect other devices using your internet connection (computer, mobile, tablet, etc.) and connect to the internet with only one device.",
+        "guide_item4": "Stop all running downloads and close other browser tabs.",
+        "guide_item5": "You can also temporarily disable automatic updates for your antivirus software and other programs. Don't forget to restore your antivirus settings to automatic mode after completing the speed test.",
+        "support_message": "Finally, if you have any dissatisfaction or complaints, you should contact the support department of Ariyabod Technology and Internet Services Company."
+    },
+    "speed_options": {
+        "title": "Speed Options",
+        "delete_speed_option": "Delete Speed Option",
+        "delete_speed_option_confirm": "Are you sure you want to delete this speed option?",
+        "yes": "Yes",
+        "cancel": "Cancel",
+        "delete_speed_option_success": "Speed option deleted successfully.",
+        "add_speed_option": "Add New Speed Option",
+        "value": "Speed Value",
+        "saving": "Saving...",
+        "save": "Save",
+        "unit": "Unit",
+        "status": "Status",
+        "edit": "Edit",
+        "delete": "Delete",
+        "actions": "Actions",
+        "active": "Active",
+        "inactive": "Inactive",
+        "add": "Add",
+        "edit_speed_option": "Edit Speed Option",
+        "no_options_found": "No speed options found."
+    },
+    "request_internet": {
+        "title": "Request Internet",
+        "note_p1": "The process of requesting internet is such that after receiving the message and checking your location, it will contact you."
+    },
+    "about_us": {
+        "main_description": "Ariyabod Companies Group is a regional company located in Herat, Afghanistan. The company began its initial activities in 2019 in the advertising services sector, and in early 2020, expanded its operations to provide better and more up-to-date services in Information and Communication Technology (ICT). In 2021, the opening of another service branch to the Ariyabod Companies Group demonstrates the planning, effort, and perseverance of the Ariyabod team for continuous growth. Quantitative and qualitative growth has been the main concern of the Ariyabod team, and in this regard, we have strived to meet the needs of society and technology enthusiasts as a young team by providing quality Internet Service Provider (ISP) services and expanding technology in our beloved country.",
+        "main_description2": "Ariyabod Companies Group is a regional company located in Herat, Afghanistan. The company began its initial activities in 2019 in the advertising services sector, and in early 2020 expanded its operations to provide better and more up-to-date services in Information and Communication Technology (ICT). The Ariyabod team carries out its activities in the advertising sector which includes design, branding, social media management, office sets, and printing; in the technology sector which includes installation of security cameras, domain and hosting, video transmission, online attendance systems, electronic locks, and consultation and implementation of smart systems and networks; and in the internet services sector which includes wireless, microwave, and satellite internet with standard and quality services under the latest network security protocols.",
+
+        "advertising_services": {
+            "title": "Advertising Services:",
+            "description": "Activities in this section include design, branding, social media management, office sets, and printing."
+        },
+        "ict_services": {
+            "title": "Technology Services (ICT):",
+            "description": "Mainly includes installation of security cameras, domain and hosting, video transmission, online attendance systems, electronic locks, and consultation and implementation of smart systems and networks."
+        },
+        "isp_services": {
+            "title": "Internet Services (ISP):",
+            "description": "Activities in this section include design, branding, social media management, office sets, and printing."
+        },
+        "image_alt": "About Us"
     }
 }

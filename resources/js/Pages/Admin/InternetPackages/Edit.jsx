@@ -33,7 +33,7 @@ export default function Edit({
     const [isOpenProvinces, setIsOpenProvinces] = useState(false);
     const dropdownProvincesRef = useRef(null);
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors, setError } = useForm({
         title: internetPackage.title || {
             en: "",
             fa: "",
@@ -86,8 +86,31 @@ export default function Edit({
         provinces: internetPackage.provinces || [],
     });
 
+    // Helper function to handle numeric input
+    const handleNumericInput = (field, value, isFloat = false) => {
+        let parsedValue;
+
+        if (value === "" || isNaN(value)) {
+            parsedValue = "";
+        } else {
+            parsedValue = isFloat ? parseFloat(value) : parseInt(value);
+        }
+
+        setData(field, parsedValue);
+    };
+
     const handleSpeedSlotChange = (index, field, value) => {
         const updatedSlots = [...speedSlots];
+
+        // If this is a speed_mb field, ensure it's a valid number
+        if (field === "speed_mb") {
+            if (value === "" || isNaN(value)) {
+                value = 0;
+            } else {
+                value = parseFloat(value);
+            }
+        }
+
         updatedSlots[index][field] = value;
         setSpeedSlots(updatedSlots);
         setData("speed_slots", updatedSlots);
@@ -117,13 +140,78 @@ export default function Edit({
     const onSubmit = (e) => {
         e.preventDefault();
 
-        // Set speed_slots to null if package type is not unlimited
-        if (data.type !== "unlimited") {
-            setData("speed_slots", null);
+        // Check if at least one province is selected
+        if (!data.provinces || data.provinces.length === 0) {
+            setError("provinces", t("internet_packages.at_least_one_province_required") || "حداقل یک ولایت باید انتخاب شود");
+            return;
         }
 
-        // No need to set festival_id here, it's already in the data state
-        put(route("admin.internet-packages.update", internetPackage.id));
+        // Create a processed form data object to ensure type consistency
+        const processedData = { ...data };
+
+        // Process any active input fields before submission
+        // For daily_limit_gb - ensure it's always a proper number
+        if (data.type === "volume_daily") {
+            // Convert the value to ensure it's a number, not a string
+            if (data.daily_limit_gb === "" || isNaN(data.daily_limit_gb)) {
+                processedData.daily_limit_gb = 0; // Set to 0 if empty or not a number
+            } else {
+                processedData.daily_limit_gb = parseInt(data.daily_limit_gb);
+            }
+
+            // Handle after_daily_limit_speed_mb
+            if (data.after_daily_limit_speed_mb === "" || isNaN(data.after_daily_limit_speed_mb)) {
+                processedData.after_daily_limit_speed_mb = 0;
+            } else {
+                processedData.after_daily_limit_speed_mb = parseFloat(data.after_daily_limit_speed_mb);
+            }
+        }
+
+        // For total_volume_gb
+        if (data.type === "volume_fixed" || data.type === "volume_daily") {
+            if (data.total_volume_gb === "" || isNaN(data.total_volume_gb)) {
+                processedData.total_volume_gb = 0;
+            } else {
+                processedData.total_volume_gb = parseInt(data.total_volume_gb);
+            }
+        }
+
+        // For speed_mb
+        if (data.speed_mb === "" || isNaN(data.speed_mb)) {
+            processedData.speed_mb = 0;
+        } else {
+            processedData.speed_mb = parseFloat(data.speed_mb);
+        }
+
+        // For night_free_speed_mb
+        if (data.has_night_free) {
+            if (data.night_free_speed_mb === "" || isNaN(data.night_free_speed_mb)) {
+                processedData.night_free_speed_mb = 0;
+            } else {
+                processedData.night_free_speed_mb = parseFloat(data.night_free_speed_mb);
+            }
+        }
+
+        // For price
+        if (data.price === "" || isNaN(data.price)) {
+            processedData.price = 0;
+        } else {
+            processedData.price = parseInt(data.price);
+        }
+
+        // Set speed_slots to null if package type is not unlimited
+        if (data.type !== "unlimited") {
+            processedData.speed_slots = null;
+        } else if (speedSlots && speedSlots.length > 0) {
+            // Ensure all speed_mb values in speedSlots are proper numbers
+            processedData.speed_slots = speedSlots.map(slot => ({
+                ...slot,
+                speed_mb: parseFloat(slot.speed_mb) || 0
+            }));
+        }
+
+        // Use the processed data for submission
+        put(route("admin.internet-packages.update", internetPackage.id), processedData);
     };
 
     // Update festival price field visibility when special price option changes
@@ -367,6 +455,10 @@ export default function Edit({
                                                 setData("price", raw);
                                             }
                                         }}
+                                        onBlur={(e) => {
+                                            const raw = e.target.value.replace(/,/g, "");
+                                            handleNumericInput("price", raw);
+                                        }}
                                         required
                                     />
                                     <InputError
@@ -426,12 +518,25 @@ export default function Edit({
                                                 name="total_volume_gb"
                                                 value={data.total_volume_gb}
                                                 className="mt-1 block w-full"
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "total_volume_gb",
-                                                        e.target.value
-                                                    )
-                                                }
+                                                onChange={(e) => {
+                                                    const value = e.target.value.trim();
+                                                    // Only allow numeric input
+                                                    if (value === '' || /^\d+$/.test(value)) {
+                                                        setData(
+                                                            "total_volume_gb",
+                                                            value === '' ? '' : parseInt(value)
+                                                        );
+                                                    }
+                                                }}
+                                                onBlur={(e) => {
+                                                    // On blur, ensure it's a valid number
+                                                    const value = e.target.value.trim();
+                                                    if (value === '' || isNaN(parseInt(value))) {
+                                                        setData("total_volume_gb", 0);
+                                                    } else {
+                                                        setData("total_volume_gb", parseInt(value));
+                                                    }
+                                                }}
                                                 required
                                             />
                                             <InputError
@@ -455,12 +560,25 @@ export default function Edit({
                                                 name="daily_limit_gb"
                                                 value={data.daily_limit_gb}
                                                 className="mt-1 block w-full"
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "daily_limit_gb",
-                                                        e.target.value
-                                                    )
-                                                }
+                                                onChange={(e) => {
+                                                    const value = e.target.value.trim();
+                                                    // Only allow numeric input
+                                                    if (value === '' || /^\d+$/.test(value)) {
+                                                        setData(
+                                                            "daily_limit_gb",
+                                                            value === '' ? '' : parseInt(value)
+                                                        );
+                                                    }
+                                                }}
+                                                onBlur={(e) => {
+                                                    // On blur, ensure it's a valid number
+                                                    const value = e.target.value.trim();
+                                                    if (value === '' || isNaN(parseInt(value))) {
+                                                        setData("daily_limit_gb", 0);
+                                                    } else {
+                                                        setData("daily_limit_gb", parseInt(value));
+                                                    }
+                                                }}
                                                 required
                                             />
                                             <InputError
@@ -483,12 +601,25 @@ export default function Edit({
                                             name="speed_mb"
                                             value={data.speed_mb}
                                             className="mt-1 block w-full"
-                                            onChange={(e) =>
-                                                setData(
-                                                    "speed_mb",
-                                                    e.target.value
-                                                )
-                                            }
+                                            onChange={(e) => {
+                                                const value = e.target.value.trim();
+                                                // Allow decimals for speed values
+                                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                    setData(
+                                                        "speed_mb",
+                                                        value
+                                                    );
+                                                }
+                                            }}
+                                            onBlur={(e) => {
+                                                // On blur, ensure it's a valid number
+                                                const value = e.target.value.trim();
+                                                if (value === '' || isNaN(parseFloat(value))) {
+                                                    setData("speed_mb", 0);
+                                                } else {
+                                                    setData("speed_mb", parseFloat(value));
+                                                }
+                                            }}
                                             required
                                             step="0.1"
                                         />
@@ -517,12 +648,25 @@ export default function Edit({
                                                     data.after_daily_limit_speed_mb
                                                 }
                                                 className="mt-1 block w-full"
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "after_daily_limit_speed_mb",
-                                                        e.target.value
-                                                    )
-                                                }
+                                                onChange={(e) => {
+                                                    const value = e.target.value.trim();
+                                                    // Allow decimals for speed values
+                                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                        setData(
+                                                            "after_daily_limit_speed_mb",
+                                                            value
+                                                        );
+                                                    }
+                                                }}
+                                                onBlur={(e) => {
+                                                    // On blur, ensure it's a valid number
+                                                    const value = e.target.value.trim();
+                                                    if (value === '' || isNaN(parseFloat(value))) {
+                                                        setData("after_daily_limit_speed_mb", 0);
+                                                    } else {
+                                                        setData("after_daily_limit_speed_mb", parseFloat(value));
+                                                    }
+                                                }}
                                                 required
                                                 step="0.1"
                                             />
@@ -535,42 +679,7 @@ export default function Edit({
                                         </div>
                                     )}
 
-                                    {data.type === "volume_daily" && (
-                                        <div>
-                                            <InputLabel
-                                                htmlFor="after_daily_limit_speed_mb"
-                                                value={
-                                                    t(
-                                                        "internet_packages.after_daily_limit_speed_mb"
-                                                    ) ||
-                                                    "سرعت پس از اتمام حجم روزانه (Mb/s)"
-                                                }
-                                            />
-                                            <TextInput
-                                                id="after_daily_limit_speed_mb"
-                                                type="number"
-                                                name="after_daily_limit_speed_mb"
-                                                value={
-                                                    data.after_daily_limit_speed_mb
-                                                }
-                                                className="mt-1 block w-full"
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "after_daily_limit_speed_mb",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                required
-                                                step="0.1"
-                                            />
-                                            <InputError
-                                                message={
-                                                    errors.after_daily_limit_speed_mb
-                                                }
-                                                className="mt-2"
-                                            />
-                                        </div>
-                                    )}
+
                                 </div>
                             </div>
                         )}
@@ -669,6 +778,10 @@ export default function Edit({
                                                             )
                                                         )
                                                     }
+                                                    onBlur={(e) => {
+                                                        const value = parseFloat(e.target.value) || 0;
+                                                        handleSpeedSlotChange(index, "speed_mb", value);
+                                                    }}
                                                     required
                                                     step="0.1"
                                                 />
@@ -850,6 +963,9 @@ export default function Edit({
                                                             e.target.value
                                                         )
                                                     }
+                                                    onBlur={(e) => {
+                                                        handleNumericInput("night_free_speed_mb", e.target.value, true);
+                                                    }}
                                                     step="0.1"
                                                     required
                                                 />
@@ -874,6 +990,7 @@ export default function Edit({
                             <div className="space-y-2 mb-4">
                                 <p className="text-sm text-gray-700">
                                     {t("internet_packages.select_provinces")}
+                                    <span className="text-red-500 ml-1">*</span>
                                 </p>
                                 <div
                                     className="relative"
@@ -881,7 +998,9 @@ export default function Edit({
                                 >
                                     <button
                                         type="button"
-                                        className="relative cursor-pointer w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-right focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        className={`relative cursor-pointer w-full bg-white border rounded-md shadow-sm pl-3 pr-10 py-2 text-right focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
+                                            errors.provinces ? 'border-red-500' : 'border-gray-300'
+                                        }`}
                                         onClick={() =>
                                             setIsOpenProvinces(!isOpenProvinces)
                                         }

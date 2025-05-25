@@ -2,10 +2,10 @@ import ApplicationLogo from "@/Components/ApplicationLogo";
 import { Link } from "@inertiajs/react";
 import AppLayout from "./AppLayout";
 
-export default function Guest({ children }) {
+export default function Guest({ children, headerData, footerData }) {
     return (
-        <AppLayout>
-            <div className="min-h-screen flex flex-col sm:justify-start items-center pt-4 sm:pt-24 bg-gray-50">
+        <AppLayout headerData={headerData} footerData={footerData}>
+            <div className={`min-h-screen ${headerData && headerData.status ? "pt-[136px]" : ""} flex flex-col sm:justify-start items-center bg-gray-50`}>
                 <div className="mb-4">
                     <Link href="/">
                         <ApplicationLogo

@@ -10,6 +10,7 @@ import { FaCheck } from "react-icons/fa6";
 import "aos/dist/aos.css";
 import "keen-slider/keen-slider.min.css";
 import { GrMapLocation } from "react-icons/gr";
+import { Button } from "@/Components/ui/Buttons";
 
 const formatTime = (dateTimeString) => {
     if (!dateTimeString) return "";
@@ -18,11 +19,79 @@ const formatTime = (dateTimeString) => {
     return dateTimeString.substring(11, 16);
 };
 
+// Helper function to format speed based on value
+const formatSpeed = (speedMb, t, lang) => {
+    if (!speedMb && speedMb !== 0) return "";
+
+    // If speed is less than 1 Mb, convert to Kb
+    if (speedMb < 1) {
+        const speedKb = Math.round(speedMb * 1024);
+        return lang === "en"
+            ? `${speedKb} ${t("internet_packages.kb_speed")}`
+            : `${t("internet_packages.kb_speed")} ${speedKb}`;
+    }
+
+    return lang === "en"
+        ? `${speedMb} ${t("internet_packages.mb_speed")}`
+        : `${t("internet_packages.mb_speed")} ${speedMb}`;
+};
+
+const formatTimeToHumanReadable = (timeString) => {
+    const lang = localStorage.getItem("lang") || "fa";
+    if (!timeString) return "";
+
+    const hour = parseInt(timeString.substring(0, 2));
+    const minutes = timeString.substring(3, 5);
+
+    const timeTerms = {
+        fa: {
+            night: "شب",
+            morning: "صبح",
+            noon: "ظهر",
+            evening: "عصر",
+        },
+        en: {
+            night: "Night",
+            morning: "AM",
+            noon: "Noon",
+            evening: "PM",
+        },
+        ps: {
+            night: "شپه",
+            morning: "سهار",
+            noon: "غرمه",
+            evening: "مازدیګر",
+        },
+    };
+
+    const terms = timeTerms[lang] || timeTerms.fa;
+
+    if (hour === 0) {
+        return minutes === "00"
+            ? `12 ${terms.night}`
+            : `12:${minutes} ${terms.night}`;
+    } else if (hour < 12) {
+        return minutes === "00"
+            ? `${hour} ${terms.morning}`
+            : `${hour}:${minutes} ${terms.morning}`;
+    } else if (hour === 12) {
+        return minutes === "00"
+            ? `12 ${terms.noon}`
+            : `12:${minutes} ${terms.noon}`;
+    } else {
+        const pmHour = hour - 12;
+        return minutes === "00"
+            ? `${pmHour} ${terms.evening}`
+            : `${pmHour}:${minutes} ${terms.evening}`;
+    }
+};
+
 export default function Welcome({
     auth,
     laravelVersion,
     phpVersion,
     headerData,
+    footerData,
     circleItems,
     servicesItems,
     internetPackages,
@@ -123,7 +192,7 @@ export default function Welcome({
     }, []);
 
     return (
-        <AppLayout auth={auth} headerData={headerData}>
+        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
             <div>
                 <Head title="Ariyabod Companies Group" />
 
@@ -411,6 +480,10 @@ export default function Welcome({
                                                 .map((pkg, index) => (
                                                     <div
                                                         key={pkg.id}
+                                                        data-aos="fade-up"
+                                                        data-aos-delay={
+                                                            index * 100
+                                                        }
                                                         className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all"
                                                     >
                                                         <div
@@ -557,67 +630,53 @@ export default function Welcome({
                                                                             <FaCheck className="text-white text-[15px]" />
                                                                         </div>
                                                                         <span>
-                                                                            {
-                                                                                pkg.speed_mb
-                                                                            }{" "}
-                                                                            {t(
-                                                                                "internet_packages.mb_speed"
-                                                                            )}
+                                                                            {formatSpeed(pkg.speed_mb, t, lang)}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* After Daily Limit Speed */}
+                                                                {pkg.daily_limit_gb && pkg.after_daily_limit_speed_mb !== undefined && (
+                                                                    <div className="flex gap-2">
+                                                                        <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                            <FaCheck className="text-white text-[15px]" />
+                                                                        </div>
+                                                                        <span>
+                                                                            {t("internet_packages.after_daily_limit")}{" "}
+                                                                            {formatSpeed(pkg.after_daily_limit_speed_mb, t, lang)}
                                                                         </span>
                                                                     </div>
                                                                 )}
 
                                                                 {/* Speed Slots for Unlimited packages */}
-                                                                {pkg.type ===
-                                                                    "unlimited" &&
+                                                                {pkg.type === "unlimited" &&
                                                                     pkg.speed_slots &&
-                                                                    Object.keys(
-                                                                        pkg.speed_slots
-                                                                    ).length >
-                                                                        0 && (
+                                                                    Object.keys(pkg.speed_slots).length > 0 && (
                                                                         <div className="space-y-3">
                                                                             {Object.entries(
                                                                                 pkg.speed_slots
                                                                             ).map(
-                                                                                (
-                                                                                    [
-                                                                                        key,
-                                                                                        slot,
-                                                                                    ],
-                                                                                    idx
-                                                                                ) => (
+                                                                                ([key, slot], idx) => (
                                                                                     <div
-                                                                                        key={
-                                                                                            idx
-                                                                                        }
+                                                                                        key={idx}
                                                                                         className="flex gap-2 text-sm"
                                                                                     >
                                                                                         <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
                                                                                             <FaCheck className="text-white text-[15px]" />
                                                                                         </div>
                                                                                         <div className="flex gap-1 items-center">
-                                                                                            {
-                                                                                                "( "
-                                                                                            }
-                                                                                            {slot.from ||
-                                                                                                ""}{" "}
-                                                                                            <span className="text-gray-600">
-                                                                                                -
+                                                                                            <span>
+                                                                                                {t("internet_packages.from")}{" "}
+                                                                                                {formatTimeToHumanReadable(
+                                                                                                    slot.from
+                                                                                                )}{" "}
+                                                                                                {t("internet_packages.to")}{" "}
+                                                                                                {formatTimeToHumanReadable(
+                                                                                                    slot.to
+                                                                                                )}{" "}
+                                                                                                {formatSpeed(slot.speed_mb, t, lang)}
                                                                                             </span>
-                                                                                            {slot.to ||
-                                                                                                ""}
-                                                                                            {
-                                                                                                " )"
-                                                                                            }
                                                                                         </div>
-
-                                                                                        <span>
-                                                                                            {slot.speed_mb ||
-                                                                                                ""}{" "}
-                                                                                            {t(
-                                                                                                "internet_packages.mb_speed"
-                                                                                            )}
-                                                                                        </span>
                                                                                     </div>
                                                                                 )
                                                                             )}
@@ -631,35 +690,22 @@ export default function Welcome({
                                                                             <FaCheck className="text-white text-[15px]" />
                                                                         </div>
                                                                         <div className="flex gap-1 items-center">
-                                                                            <div className="text-sm flex gap-1 items-center">
-                                                                                {
-                                                                                    "("
-                                                                                }
-                                                                                {formatTime(
-                                                                                    pkg.night_free_start_time
-                                                                                )}
-                                                                                <span className="text-gray-600">
-                                                                                    -
-                                                                                </span>{" "}
-                                                                                {formatTime(
-                                                                                    pkg.night_free_end_time
-                                                                                )}
-                                                                                {
-                                                                                    ")"
-                                                                                }
-                                                                            </div>
-                                                                            <span className="text-sm whitespace-nowrap">
+                                                                            <span className="text-sm">
+                                                                                {t("internet_packages.from")}{" "}
+                                                                                {formatTimeToHumanReadable(
+                                                                                    formatTime(
+                                                                                        pkg.night_free_start_time
+                                                                                    )
+                                                                                )}{" "}
+                                                                                {t("internet_packages.to")}{" "}
+                                                                                {formatTimeToHumanReadable(
+                                                                                    formatTime(
+                                                                                        pkg.night_free_end_time
+                                                                                    )
+                                                                                )}{" "}
                                                                                 {pkg.is_night_free
-                                                                                    ? t(
-                                                                                          "internet_packages.free"
-                                                                                      )
-                                                                                    : `${t(
-                                                                                          "internet_packages.speed"
-                                                                                      )} ${
-                                                                                          pkg.night_free_speed_mb
-                                                                                      } ${t(
-                                                                                          "internet_packages.mb"
-                                                                                      )}`}
+                                                                                    ? t("internet_packages.free")
+                                                                                    : formatSpeed(pkg.night_free_speed_mb, t, lang)}
                                                                             </span>
                                                                         </div>
                                                                     </div>
@@ -716,7 +762,7 @@ export default function Welcome({
                         </div>
 
                         {/* about us section */}
-                        <div className="flex flex-col md:flex-row gap-4 px-4">
+                        <div className="flex flex-col md:flex-row gap-4 px-4 py-4">
                             <div className=" md:min-w-[383px] md:h-[280px] px-6">
                                 <img
                                     src="/images/about.png"
@@ -726,36 +772,186 @@ export default function Welcome({
                             </div>
                             <div className="flex flex-col gap-2">
                                 <h1 className="text-2xl font-bold">
-                                    درباره ما
+                                    {t("about_us.image_alt")}
                                 </h1>
-                                <p>
-                                    گروپ کمپنی های آریابُد یک شرکت منطقه ای واقع
-                                    در شهر هرات، افغانستان میباشد. که نخستین
-                                    فعالیت های خویش را درسال 2019 میلادی در بخش
-                                    خدمات تبلیغاتی که خود آغازنموده، و در ابتدای
-                                    سال 2020 میلادی به منظور ارائه خدمات بهتر و
-                                    بروزتر در زمینه خدمات تکنولوژی (ICT) فعالیت
-                                    های خود را گسترش داد. تیم آریابُد فعالیت های
-                                    خودرا در بخش تبلیغاتی که شامل طراحی،
-                                    برندسازی ، مدیریت صفحات اجتماعی، ست اداری، و
-                                    چاپ و در بخش تکنالوژی که شامل نصب دوربین های
-                                    امنیتی،دامنه و میزبانی، انتقال تصویر،حاضری
-                                    های آنلاین، قفل های الکترونیکی و مشاوره و
-                                    راه اندازی سیستم ها و شبکه های هوشمند و در
-                                    بخش خدمات انترنتی که شامل وایرلس، مایکرویو،
-                                    و اینترنت ماهواره ای با خدمات استاندارد و
-                                    معیاری تحت بروزترین پروتکل های امنیتی شبکه
-                                    میباشد،
-                                </p>
+                                <p>{t("about_us.main_description2")}</p>
+                                <Link
+                                    href="/about-us"
+                                    className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition w-fit mt-2"
+                                >
+                                    {t("more_info")}
+                                </Link>
                             </div>
                         </div>
-
-                        <div className="px-4 bg-gray-50 mt-20">
+                        {/* tools section */}
+                        <div className="px-4 bg-gray-50 mt-20 pb-10">
                             <h1 className="text-4xl font-semibold w-full text-center py-10">
                                 ابزار ها
                             </h1>
-                            <div>
+                            <div className="grid md:grid-cols-2 gap-6  max-w-screen-lg2 mx-auto">
+                                <div
+                                    className="tools-item  bg-white"
+                                    style={{ "--c": "#428b7c" }}
+                                >
+                                    <img
+                                        className="w-full h-[250px] object-contain bg-white"
+                                        src="/images/orgtest.png"
+                                        alt=""
+                                    />
+                                    <div className="p-4">
+                                        <h2 className="text-xl text-center font-bold mb-3 text-primary">
+                                            {t("network_test.about_title")}
+                                        </h2>
+                                        <p className="mb-4">
+                                            {t("network_test.description_long")}
+                                        </p>
+                                        <div className="flex justify-center mt-4">
+                                            <Link
+                                                href="/network-test"
+                                                className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition"
+                                            >
+                                                {t("view")}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    className="tools-item  bg-white"
+                                    style={{ "--c": "#428b7c" }}
+                                >
+                                    <img
+                                        className="w-full h-[250px] object-contain bg-white"
+                                        src="/images/bubdle.png"
+                                        alt=""
+                                    />
+                                    <div className="p-4">
+                                        <h2 className="text-xl text-center font-bold mb-3 text-primary">
+                                            {t("calculator.title")}
+                                        </h2>
+                                        <p className="mb-4">
+                                            {t("calculator.description")}
+                                        </p>
+                                        <div className="flex justify-center mt-4">
+                                            <Link
+                                                href="/calculate-bundle"
+                                                className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition"
+                                            >
+                                                {t("view")}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    className="tools-item  bg-white"
+                                    style={{ "--c": "#428b7c" }}
+                                >
+                                    <img
+                                        className="w-full h-[250px] object-contain bg-white"
+                                        src="/images/width-band.png"
+                                        alt=""
+                                    />
+                                    <div className="p-4">
+                                        <h2 className="text-xl text-center font-bold mb-3 text-primary">
+                                            {t(
+                                                "calculator.bandwidth_calculator"
+                                            )}
+                                        </h2>
+                                        <p className="mb-4">
+                                            {t("calculator.note_p2")}
+                                        </p>
+                                        <div className="flex justify-center mt-4">
+                                            <Link
+                                                href="/bandwidth-calculator"
+                                                className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition"
+                                            >
+                                                {t("view")}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
 
+                                <div
+                                    className="tools-item  bg-white"
+                                    style={{ "--c": "#428b7c" }}
+                                >
+                                    <img
+                                        className="w-full h-[250px] object-contain bg-white"
+                                        src="/images/internet-req.png"
+                                        alt=""
+                                    />
+                                    <div className="p-4">
+                                        <h2 className="text-xl text-center font-bold mb-3 text-primary">
+                                            {t("request_internet.title")}
+                                        </h2>
+                                        <p className="mb-4">
+                                            {t("request_internet.note_p1")}
+                                        </p>
+                                        <div className="flex justify-center mt-4">
+                                            <Link
+                                                href="/request-internet"
+                                                className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition"
+                                            >
+                                                {t("view")}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {/* <!-- curved-div --> */}
+                        <div className="rotate-180">
+                            <svg
+                                class="packages_svg"
+                                xmlns="http://www.w3.org/2000/svg"
+                                version="1.1"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xmlns:svgjs="http://svgjs.com/svgjs"
+                                width="100%"
+                                height="100"
+                                preserveAspectRatio="none"
+                                viewBox="0 0 1440 100"
+                            >
+                                <g mask='url("#SvgjsMask1071")' fill="none">
+                                    <path
+                                        d="M 0,40 C 96,50 288,90.2 480,90 C 672,89.8 768,43 960,39 C 1152,35 1344,63.8 1440,70L1440 100L0 100z"
+                                        fill="#f7f9fc"
+                                    ></path>
+                                </g>
+                                <defs>
+                                    <mask id="SvgjsMask1071">
+                                        <rect
+                                            width="1440"
+                                            height="100"
+                                            fill="#ffffff"
+                                        ></rect>
+                                    </mask>
+                                </defs>
+                            </svg>
+                        </div>
+
+                        {/* package management section */}
+                        <div className="px-4 mt-20 pb-10">
+                            <h1 className="text-4xl font-semibold w-full text-center mb-6 pt-10">
+                                اطلاعات بسته انترنتی شما
+                            </h1>
+                            <p className="text-center text-lg">
+                                یکی از هدف های ایجاد این پنل کاربردی مشاهده و
+                                اطلاع از حجم باقیمانده بسته اینترنتی تان می
+                                باشد. خوشبختانه این امر به سادگی امکان پذیر می
+                                باشد ، چرا که به محض ورود به طور اتوماتیک وارد
+                                پنل کاربری خود میشوید و روز های باقیمانده و حجم
+                                باقیمانده ، همچنین حجم مصرفی وگزارش دقیق ازتمامی
+                                بسته هایی که در گذشته و حال فعال کردید را
+                                میتوانید مشاهده نمایید.
+                            </p>
+                            <h2 className="text-xl font-semibold text-center mt-3">
+                                قابل ذکر است که این ویژگی مخصوص مشترکین شرکت
+                                خدمات تکنولوژی و اینترنتی آریابُد میباشد.
+                            </h2>
+                            <div className="flex justify-center">
+                                <button className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition w-fit mx-auto mt-4">
+                                    اطلاعات بسته شما
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -764,57 +960,57 @@ export default function Welcome({
         </AppLayout>
     );
 }
-const WheelControls = (slider) => {
-    let touchTimeout;
-    let position;
-    let wheelActive;
+// const WheelControls = (slider) => {
+//     let touchTimeout;
+//     let position;
+//     let wheelActive;
 
-    function dispatch(e, name) {
-        position.x -= e.deltaX;
-        position.y -= e.deltaY;
-        slider.container.dispatchEvent(
-            new CustomEvent(name, {
-                detail: {
-                    x: position.x,
-                    y: position.y,
-                },
-            })
-        );
-    }
+//     function dispatch(e, name) {
+//         position.x -= e.deltaX;
+//         position.y -= e.deltaY;
+//         slider.container.dispatchEvent(
+//             new CustomEvent(name, {
+//                 detail: {
+//                     x: position.x,
+//                     y: position.y,
+//                 },
+//             })
+//         );
+//     }
 
-    function wheelStart(e) {
-        position = {
-            x: e.pageX,
-            y: e.pageY,
-        };
-        dispatch(e, "ksDragStart");
-    }
+//     function wheelStart(e) {
+//         position = {
+//             x: e.pageX,
+//             y: e.pageY,
+//         };
+//         dispatch(e, "ksDragStart");
+//     }
 
-    function wheel(e) {
-        dispatch(e, "ksDrag");
-    }
+//     function wheel(e) {
+//         dispatch(e, "ksDrag");
+//     }
 
-    function wheelEnd(e) {
-        dispatch(e, "ksDragEnd");
-    }
+//     function wheelEnd(e) {
+//         dispatch(e, "ksDragEnd");
+//     }
 
-    function eventWheel(e) {
-        e.preventDefault();
-        if (!wheelActive) {
-            wheelStart(e);
-            wheelActive = true;
-        }
-        wheel(e);
-        clearTimeout(touchTimeout);
-        touchTimeout = setTimeout(() => {
-            wheelActive = false;
-            wheelEnd(e);
-        }, 50);
-    }
+//     function eventWheel(e) {
+//         e.preventDefault();
+//         if (!wheelActive) {
+//             wheelStart(e);
+//             wheelActive = true;
+//         }
+//         wheel(e);
+//         clearTimeout(touchTimeout);
+//         touchTimeout = setTimeout(() => {
+//             wheelActive = false;
+//             wheelEnd(e);
+//         }, 50);
+//     }
 
-    slider.on("created", () => {
-        slider.container.addEventListener("wheel", eventWheel, {
-            passive: false,
-        });
-    });
-};
+//     slider.on("created", () => {
+//         slider.container.addEventListener("wheel", eventWheel, {
+//             passive: false,
+//         });
+//     });
+// };

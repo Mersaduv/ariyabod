@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InternetPackage;
 use App\Models\Festival;
+use App\Models\SpeedOption;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
@@ -35,10 +36,14 @@ class InternetPackageWebController extends Controller
         $festivals = Festival::where('is_active', true)->latest()->get();
         $provinces = $this->getProvincesList();
 
+        // Get active speed options
+        $speedOptions = SpeedOption::getActiveOptions();
+
         return Inertia::render('Admin/InternetPackages/Index', [
             'internetPackages' => $packages,
             'festivals' => $festivals,
-            'provinces' => $provinces
+            'provinces' => $provinces,
+            'speedOptions' => $speedOptions
         ]);
     }
 
@@ -92,7 +97,7 @@ class InternetPackageWebController extends Controller
             'night_free_start_time' => 'nullable|required_if:has_night_free,1|date_format:H:i',
             'night_free_end_time' => 'nullable|required_if:has_night_free,1|date_format:H:i',
             'night_free_speed_mb' => 'nullable|required_if:has_night_free,1|numeric|min:0',
-            'provinces' => 'nullable|array',
+            'provinces' => 'required|array|min:1',
         ]);
 
         // Extract festival data
@@ -189,7 +194,7 @@ class InternetPackageWebController extends Controller
             'night_free_start_time' => 'nullable|required_if:has_night_free,1|date_format:H:i',
             'night_free_end_time' => 'nullable|required_if:has_night_free,1|date_format:H:i',
             'night_free_speed_mb' => 'nullable|required_if:has_night_free,1|numeric|min:0',
-            'provinces' => 'nullable|array',
+            'provinces' => 'required|array|min:1',
         ]);
 
         // Extract festival data
@@ -249,5 +254,83 @@ class InternetPackageWebController extends Controller
         $internetPackage->delete();
 
         return redirect()->route('admin.internet-packages.index')->with('success', 'بسته حذف شد');
+    }
+
+    /**
+     * Store a new speed option.
+     */
+    public function storeSpeedOption(Request $request)
+    {
+        $validated = $request->validate([
+            'value' => 'required|numeric|min:0',
+            'unit' => 'required|in:kb,mb,gb',
+        ]);
+
+        // Set default values for is_active and display_order
+        $validated['is_active'] = true;
+        $validated['display_order'] = SpeedOption::max('display_order') + 1;
+
+        try {
+            $speedOption = SpeedOption::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'گزینه سرعت با موفقیت اضافه شد',
+                'speed_option' => $speedOption
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در ذخیره سازی: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all speed options.
+     */
+    public function getSpeedOptions()
+    {
+        $speedOptions = SpeedOption::orderBy('display_order')->get();
+
+        return response()->json([
+            'speed_options' => $speedOptions
+        ]);
+    }
+
+    /**
+     * Delete a speed option.
+     */
+    public function destroySpeedOption(SpeedOption $speedOption)
+    {
+        $speedOption->delete();
+
+        return redirect()->route('admin.internet-packages.index')->with('success', 'گزینه سرعت با موفقیت حذف شد');
+    }
+
+    /**
+     * Update a speed option.
+     */
+    public function updateSpeedOption(Request $request, \App\Models\SpeedOption $speedOption)
+    {
+        $validated = $request->validate([
+            'value' => 'required|numeric|min:0',
+            'unit' => 'required|in:kb,mb,gb',
+        ]);
+
+        try {
+            $speedOption->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'گزینه سرعت با موفقیت بروزرسانی شد',
+                'speed_option' => $speedOption
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطا در بروزرسانی: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

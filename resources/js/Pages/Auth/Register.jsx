@@ -7,7 +7,7 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, Link, useForm } from "@inertiajs/react";
 
-export default function Register() {
+export default function Register({ headerData, footerData }) {
     const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: "",
@@ -28,7 +28,7 @@ export default function Register() {
     };
 
     return (
-        <GuestLayout>
+        <GuestLayout headerData={headerData} footerData={footerData}>
             <Head title="Register" />
 
             <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">

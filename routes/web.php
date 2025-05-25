@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\CircleController;
+use App\Http\Controllers\ContactUsController;
 use App\Http\Controllers\FooterDesignController;
 use App\Http\Controllers\FestivalController;
 use App\Http\Controllers\GeneralDesignController;
 use App\Http\Controllers\InternetPackageWebController;
+use App\Http\Controllers\InternetRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiteItemController;
 use App\Models\Circle;
@@ -31,10 +33,8 @@ use Inertia\Inertia;
 
 Route::middleware(['log.visit'])->group(function () {
     Route::get('/', function () {
-        $headerSetting = Setting::where('key', 'header')->first();
         $circleItems = SiteItem::where('type', 'circle')->get();
         $servicesItems = SiteItem::where('type', 'service')->get();
-        $headerData = $headerSetting ? json_decode($headerSetting->value, true) : [];
         $internetPackages = InternetPackage::all();
         // Define provinces list
         $provincesList = [
@@ -54,7 +54,6 @@ Route::middleware(['log.visit'])->group(function () {
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
             'phpVersion' => PHP_VERSION,
-            'headerData' => $headerData,
             'circleItems' => $circleItems,
             'servicesItems' => $servicesItems,
             'internetPackages' => $internetPackages,
@@ -64,8 +63,6 @@ Route::middleware(['log.visit'])->group(function () {
 
     // Packages route
     Route::get('/packages', function () {
-        $headerSetting = Setting::where('key', 'header')->first();
-        $headerData = $headerSetting ? json_decode($headerSetting->value, true) : [];
         $internetPackages = InternetPackage::all();
 
         // Define provinces list
@@ -97,7 +94,6 @@ Route::middleware(['log.visit'])->group(function () {
         $types = InternetPackage::distinct('type')->whereNotNull('type')->pluck('type');
 
         return Inertia::render('Packages', [
-            'headerData' => $headerData,
             'internetPackages' => $internetPackages,
             'provinces' => $allProvinces,
             'types' => $types,
@@ -106,15 +102,42 @@ Route::middleware(['log.visit'])->group(function () {
 
     // Network Test route
     Route::get('/network-test', function () {
-        $headerSetting = Setting::where('key', 'header')->first();
-        $headerData = $headerSetting ? json_decode($headerSetting->value, true) : [];
-
-        return Inertia::render('NetworkTest', [
-            'headerData' => $headerData,
-        ]);
+        return Inertia::render('NetworkTest');
     })->name('network-test');
 
+    // Calculate Bundle route
+    Route::get('/calculate-bundle', function () {
+        // Get active speed options for calculator
+        $speedOptions = App\Models\SpeedOption::getActiveOptions();
+
+        return Inertia::render('CalculateBundle', [
+            'speedOptions' => $speedOptions,
+        ]);
+    })->name('calculate-bundle');
+
+    // Internet Bandwidth Calculator route
+    Route::get('/bandwidth-calculator', function () {
+        // Get active speed options for calculator
+        $speedOptions = App\Models\SpeedOption::getActiveOptions();
+
+        return Inertia::render('InternetBandwidthCalculator', [
+            'speedOptions' => $speedOptions,
+        ]);
+    })->name('bandwidth-calculator');
+
+    // Internet Request route
+    Route::get('/request-internet', [InternetRequestController::class, 'show'])->name('request-internet');
+    Route::post('/request-internet', [InternetRequestController::class, 'submit'])->name('request-internet.submit');
+
     // about, contact
+    Route::get('/about-us', function () {
+        return Inertia::render('AboutUs');
+    })->name('about-us');
+
+    Route::get('/contact-us', function () {
+        return Inertia::render('ContactUs');
+    })->name('contact-us');
+    Route::post('/contact-us', [ContactUsController::class, 'submit'])->name('contact-us.submit');
 });
 
 Route::middleware(['auth', 'log.visit'])->group(function () {
@@ -180,6 +203,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/general-design', [GeneralDesignController::class, 'edit'])->name('general-design');
     Route::post('/general-design', [GeneralDesignController::class, 'update'])->name('general-design.save');
     Route::post('/footer-design', [FooterDesignController::class, 'update'])->name('footer-design.save');
+    Route::post('/footer-design/upload', [FooterDesignController::class, 'upload'])->name('footer-design.upload');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -197,6 +221,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/internet-packages/{internetPackage}/edit', [InternetPackageWebController::class, 'edit'])->name('internet-packages.edit');
     Route::put('/internet-packages/{internetPackage}', [InternetPackageWebController::class, 'update'])->name('internet-packages.update');
     Route::delete('/internet-packages/{internetPackage}', [InternetPackageWebController::class, 'destroy'])->name('internet-packages.destroy');
+
+    // Speed options routes
+    Route::get('/speed-options', [InternetPackageWebController::class, 'getSpeedOptions'])->name('speed-options.index');
+    Route::post('/speed-options', [InternetPackageWebController::class, 'storeSpeedOption'])->name('speed-options.store');
+    Route::put('/speed-options/{speedOption}', [InternetPackageWebController::class, 'updateSpeedOption'])->name('speed-options.update');
+    Route::delete('/speed-options/{speedOption}', [InternetPackageWebController::class, 'destroySpeedOption'])->name('speed-options.destroy');
 
     // Festival routes
     Route::resource('festivals', FestivalController::class);

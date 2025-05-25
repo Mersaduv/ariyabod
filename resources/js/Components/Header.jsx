@@ -10,6 +10,7 @@ export default function Header({ auth }) {
     const { t } = useTranslation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [subOpen, setSubOpen] = useState(false);
+    const [subOpen2, setSubOpen2] = useState(false);
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
     const dropdownRef = useRef(null);
@@ -83,7 +84,7 @@ export default function Header({ auth }) {
                                     </Link>
                                     <hr />
                                     <Link
-                                        href="#"
+                                        href="/calculate-bundle"
                                         className="block px-4 py-2 hover:text-[#4adcbf]"
                                     >
                                         <div className="mb-[6px] mt-[1px]">
@@ -99,7 +100,7 @@ export default function Header({ auth }) {
                                     </Link>
                                     <hr />
                                     <Link
-                                        href="#"
+                                        href="/bandwidth-calculator"
                                         className="block px-4 py-3 hover:text-[#4adcbf]"
                                     >
                                         {t("nav.tools.bandwidthCalculator")}
@@ -109,25 +110,25 @@ export default function Header({ auth }) {
 
                             <Link
                                 className="py-3 px-2 hover:text-[#4adcbf]"
-                                href="#"
+                                href="/request-internet"
                             >
                                 {t("nav.internetRequest")}
                             </Link>
                             <Link
                                 className="py-3 px-2 hover:text-[#4adcbf]"
-                                href="#"
+                                href="/packages"
                             >
                                 {t("nav.packages")}
                             </Link>
                             <Link
                                 className="py-3 px-2 hover:text-[#4adcbf]"
-                                href="#"
+                                href="/about-us"
                             >
                                 {t("nav.aboutUs")}
                             </Link>
                             <Link
                                 className="py-3 px-2 hover:text-[#4adcbf]"
-                                href="#"
+                                href="/contact-us"
                             >
                                 {t("nav.contactUs")}
                             </Link>
@@ -254,23 +255,90 @@ export default function Header({ auth }) {
                     </div>
                 </div>
 
+                {/* mobile nav menu */}
                 {menuOpen && (
                     <div
                         ref={dropdownRef}
                         className="md2:hidden fixed top-[70px] inset-x-0 bg-[#2c5f59] text-white shadow-md z-40"
                     >
                         <nav className="flex flex-col px-4 py-4 space-y-3">
-                            <Link href="#" className="hover:text-[#428b7c]">
+                        {auth.user ? (
+                                <div className="w-full">
+                                    <button
+                                        id="sample-dropdown"
+                                        onClick={() =>
+                                            setSubOpen2((prev) => !prev)
+                                        }
+                                        className="flex justify-between items-center w-full"
+                                    >
+                                        <span> {auth.user.name}</span>
+                                        <IoIosArrowDown
+                                            className={`${
+                                                subOpen2 ? "rotate-180" : ""
+                                            } text-xl`}
+                                        />
+                                    </button>
+                                    {subOpen2 && (
+                                        <div className="flex flex-col space-y-2 pt-2 px-2 mb-1">
+                                            <hr />
+                                            <div
+                                                title={auth.user.email}
+                                                dir={
+                                                    localStorage.getItem(
+                                                        "lang"
+                                                    ) === "en"
+                                                        ? ""
+                                                        : "ltr"
+                                                }
+                                                className="text-sm hover:text-[#4adcbf] text-ellipsis overflow-hidden whitespace-nowrap"
+                                            >
+                                                {auth.user.email}
+                                            </div>
+                                            <hr />
+                                            {auth.user.role === "admin" && (
+                                                <Link
+                                                    href={route(
+                                                        "admin.dashboard"
+                                                    )}
+                                                    className="hover:text-[#4adcbf] text-sm"
+                                                >
+                                                    {t("dashboard")}
+                                                </Link>
+                                            )}
+                                            <hr />
+                                            <Link
+                                                href={route("profile.edit")}
+                                                className="hover:text-[#4adcbf] text-sm "
+                                            >
+                                                {t("profile")}
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <Link
+                                    href={route("login")}
+                                    className="flex items-center justify-center rounded-md bg-[#034f408e] h-9 px-2 hover:bg-[#42d4b73e] text-white gap-1"
+                                >
+                                    <FaUserAlt />
+                                    <div>{t("login")}</div>
+                                </Link>
+                            )}
+                            <hr />
+                            <Link href="#" className="hover:text-[#4adcbf]">
                                 {t("nav.home")}
                             </Link>
                             <hr />
                             <button
+                                id="sample-dropdown"
                                 onClick={() => setSubOpen((prev) => !prev)}
-                                className="flex justify-between px-2"
+                                className="flex justify-between items-center"
                             >
                                 <span>{t("nav.tools.title")}</span>
                                 <IoIosArrowDown
-                                    className={`${subOpen ? "rotate-180" : ""}`}
+                                    className={`${
+                                        subOpen ? "rotate-180" : ""
+                                    } text-xl`}
                                 />
                             </button>
                             {subOpen && (
@@ -284,14 +352,14 @@ export default function Header({ auth }) {
                                     </Link>
                                     <hr />
                                     <Link
-                                        href="#"
+                                        href="/calculate-bundle"
                                         className="hover:text-[#4adcbf] text-sm"
                                     >
                                         {t("nav.tools.packageCalculator.title")}
                                     </Link>
                                     <hr />
                                     <Link
-                                        href="#"
+                                        href="/bandwidth-calculator"
                                         className="hover:text-[#4adcbf] text-sm"
                                     >
                                         {t("nav.tools.bandwidthCalculator")}
@@ -299,24 +367,32 @@ export default function Header({ auth }) {
                                 </div>
                             )}
                             <hr />
-                            <Link href="#" className="hover:text-[#428b7c]">
+                            <Link href="#" className="hover:text-[#4adcbf]">
                                 {t("nav.internetRequest")}
                             </Link>
                             <hr />
-                            <Link href="#" className="hover:text-[#428b7c]">
+                            <Link href="#" className="hover:text-[#4adcbf]">
                                 {t("nav.packages")}
                             </Link>
                             <hr />
-                            <Link href="#" className="hover:text-[#428b7c]">
+                            <Link href="#" className="hover:text-[#4adcbf]">
                                 {t("nav.aboutUs")}
                             </Link>
                             <hr />
-                            <Link href="#" className="hover:text-[#428b7c]">
+                            <Link href="#" className="hover:text-[#4adcbf]">
                                 {t("nav.contactUs")}
                             </Link>
                             <hr />
-                            <Link href="#" className="hover:text-[#428b7c]">
+                            {/* <Link href="#" className="hover:text-[#4adcbf]">
                                 {t("login")}
+                            </Link> */}
+                            <Link
+                                href={route("logout")}
+                                method="post"
+                                as="button"
+                                className="hover:text-[#4adcbf] font-semibold text-start"
+                            >
+                                {t("logout")}
                             </Link>
                         </nav>
                     </div>

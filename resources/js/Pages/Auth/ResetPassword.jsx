@@ -1,15 +1,23 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import GuestLayout from "@/Layouts/GuestLayout";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-hot-toast";
 
-export default function ResetPassword({ token, email }) {
+export default function ResetPassword({
+    token,
+    email,
+    headerData,
+    footerData,
+}) {
     const { t, i18n } = useTranslation();
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { flash } = usePage().props;
+    const [showSuccess, setShowSuccess] = useState(false);
     const { data, setData, post, processing, errors, reset, clearErrors } =
         useForm({
             token: token,
@@ -28,16 +36,44 @@ export default function ResetPassword({ token, email }) {
         clearErrors();
     }, [i18n.language]);
 
+    useEffect(() => {
+        if (flash && flash.success) {
+            setShowSuccess(true);
+            toast.success(flash.success);
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 5000);
+        }
+    }, [flash]);
+
     const submit = (e) => {
         e.preventDefault();
-        post(route("password.store"));
+        setIsSubmitting(true);
+
+        const toastId = toast.loading("درحال بازیابی رمز عبور...");
+        post(route("password.store"), {
+            onSuccess: () => {
+                reset();
+                toast.success("رمز عبور با موفقیت بازیابی شد", {
+                    id: toastId,
+                });
+                setIsSubmitting(false);
+            },
+            onError: () => {
+                toast.error("خطا در بازیابی رمز عبور. لطفاً دوباره تلاش کنید", {
+                    id: toastId,
+                });
+                setIsSubmitting(false);
+            },
+            preserveScroll: true,
+        });
     };
 
     return (
-        <GuestLayout>
+        <GuestLayout headerData={headerData} footerData={footerData}>
             <Head title={t("reset_password.reset_password")} />
 
-            <form onSubmit={submit}>
+            <form  onSubmit={submit}>
                 <div>
                     <InputLabel
                         htmlFor="email"
@@ -101,7 +137,10 @@ export default function ResetPassword({ token, email }) {
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <PrimaryButton
+                        className="ms-4"
+                        disabled={processing || isSubmitting}
+                    >
                         {t("reset_password.reset_password")}
                     </PrimaryButton>
                 </div>

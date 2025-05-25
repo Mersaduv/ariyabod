@@ -15,7 +15,7 @@ class GeneralDesignController extends Controller
         $footer = Setting::where('key', 'footer')->first();
 
         $headerData = $header ? json_decode($header->value, true) : [];
-        $footerData = $footer ? $footer->value : '';
+        $footerData = $footer ? json_decode($footer->value, true) : []; 
 
         return Inertia::render('Admin/GeneralDesign', [
             'headerData' => $headerData,

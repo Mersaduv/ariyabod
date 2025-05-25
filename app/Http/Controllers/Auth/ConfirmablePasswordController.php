@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Setting;
 
 class ConfirmablePasswordController extends Controller
 {
@@ -18,7 +19,12 @@ class ConfirmablePasswordController extends Controller
      */
     public function show(): Response
     {
-        return Inertia::render('Auth/ConfirmPassword');
+        $footer = Setting::where('key', 'footer')->first();
+        $footerData = $footer ? json_decode($footer->value, true) : null;
+
+        return Inertia::render('Auth/ConfirmPassword', [
+            'footerData' => $footerData,
+        ]);
     }
 
     /**

@@ -17,6 +17,7 @@ return [
         'name' => 'نوم',
         'current_password' => 'اوسنی پاسورډ',
         'items.*.image' => 'د توکي انځور',
+        'provinces' => 'ولایتونه',
     ],
     'custom' => [
         'current_password' => [

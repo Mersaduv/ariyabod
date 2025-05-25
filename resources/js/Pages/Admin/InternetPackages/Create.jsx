@@ -18,6 +18,7 @@ export default function Create({ auth, festivals, provinces }) {
         { from: "07:00", to: "06:00", speed_mb: 1.5 },
     ]);
     const [isOpenProvinces, setIsOpenProvinces] = useState(false);
+    const [formSubmitted, setFormSubmitted] = useState(false);
     const dropdownProvincesRef = useRef(null);
     const { data, setData, post, processing, errors } = useForm({
         title: {
@@ -129,6 +130,7 @@ export default function Create({ auth, festivals, provinces }) {
 
     const onSubmit = (e) => {
         e.preventDefault();
+        setFormSubmitted(true);
 
         // Set speed_slots to null if package type is not unlimited
         if (data.type !== "unlimited") {
@@ -181,14 +183,14 @@ export default function Create({ auth, festivals, provinces }) {
                                 <div>
                                     <InputLabel
                                         htmlFor="title_fa"
-                                        value={t('internet_packages.title_fa')}
+                                        value={`${t('internet_packages.title_fa')} *`}
                                     />
                                     <TextInput
                                         id="title_fa"
                                         type="text"
                                         name="title_fa"
                                         value={data.title.fa}
-                                        className="mt-1 block w-full"
+                                        className={`mt-1 block w-full ${errors["title.fa"] ? 'border-red-500' : ''}`}
                                         onChange={(e) =>
                                             setData("title", {
                                                 ...data.title,
@@ -206,14 +208,14 @@ export default function Create({ auth, festivals, provinces }) {
                                 <div>
                                     <InputLabel
                                         htmlFor="title_en"
-                                        value={t('internet_packages.title_en')}
+                                        value={`${t('internet_packages.title_en')} *`}
                                     />
                                     <TextInput
                                         id="title_en"
                                         type="text"
                                         name="title_en"
                                         value={data.title.en}
-                                        className="mt-1 block w-full"
+                                        className={`mt-1 block w-full ${errors["title.en"] ? 'border-red-500' : ''}`}
                                         onChange={(e) =>
                                             setData("title", {
                                                 ...data.title,
@@ -231,14 +233,14 @@ export default function Create({ auth, festivals, provinces }) {
                                 <div>
                                     <InputLabel
                                         htmlFor="title_ps"
-                                        value={t('internet_packages.title_ps')}
+                                        value={`${t('internet_packages.title_ps')} *`}
                                     />
                                     <TextInput
                                         id="title_ps"
                                         type="text"
                                         name="title_ps"
                                         value={data.title.ps}
-                                        className="mt-1 block w-full"
+                                        className={`mt-1 block w-full ${errors["title.ps"] ? 'border-red-500' : ''}`}
                                         onChange={(e) =>
                                             setData("title", {
                                                 ...data.title,
@@ -257,13 +259,13 @@ export default function Create({ auth, festivals, provinces }) {
                                 <div>
                                     <InputLabel
                                         htmlFor="type"
-                                        value={t('internet_packages.package_type')}
+                                        value={`${t('internet_packages.package_type')} *`}
                                     />
                                     <SelectInput
                                         id="type"
                                         name="type"
                                         value={data.type}
-                                        className="mt-1 block w-full"
+                                        className={`mt-1 block w-full ${errors.type ? 'border-red-500' : ''}`}
                                         onChange={(e) => {
                                             const newType = e.target.value;
                                             setData("type", newType);
@@ -300,7 +302,7 @@ export default function Create({ auth, festivals, provinces }) {
                                 <div>
                                     <InputLabel
                                         htmlFor="price"
-                                        value={t('internet_packages.price')}
+                                        value={`${t('internet_packages.price')} *`}
                                     />
                                     <TextInput
                                         id="price"
@@ -309,7 +311,7 @@ export default function Create({ auth, festivals, provinces }) {
                                         value={formatPriceWithCommas(
                                             data.price
                                         )}
-                                        className="mt-1 block w-full"
+                                        className={`mt-1 block w-full ${errors.price ? 'border-red-500' : ''}`}
                                         onChange={(e) => {
                                             const raw = e.target.value.replace(
                                                 /,/g,
@@ -330,14 +332,14 @@ export default function Create({ auth, festivals, provinces }) {
                                 <div>
                                     <InputLabel
                                         htmlFor="duration_days"
-                                        value={t('internet_packages.duration_days')}
+                                        value={`${t('internet_packages.duration_days')} *`}
                                     />
                                     <TextInput
                                         id="duration_days"
                                         type="number"
                                         name="duration_days"
                                         value={data.duration_days}
-                                        className="mt-1 block w-full"
+                                        className={`mt-1 block w-full ${errors.duration_days ? 'border-red-500' : ''}`}
                                         onChange={(e) =>
                                             setData(
                                                 "duration_days",
@@ -373,7 +375,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                 type="number"
                                                 name="total_volume_gb"
                                                 value={data.total_volume_gb}
-                                                className="mt-1 block w-full"
+                                                className={`mt-1 block w-full ${errors.total_volume_gb ? 'border-red-500' : ''}`}
                                                 onChange={(e) =>
                                                     setData(
                                                         "total_volume_gb",
@@ -400,7 +402,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                 type="number"
                                                 name="daily_limit_gb"
                                                 value={data.daily_limit_gb}
-                                                className="mt-1 block w-full"
+                                                className={`mt-1 block w-full ${errors.daily_limit_gb ? 'border-red-500' : ''}`}
                                                 onChange={(e) =>
                                                     setData(
                                                         "daily_limit_gb",
@@ -426,7 +428,7 @@ export default function Create({ auth, festivals, provinces }) {
                                             type="number"
                                             name="speed_mb"
                                             value={data.speed_mb}
-                                            className="mt-1 block w-full"
+                                            className={`mt-1 block w-full ${errors.speed_mb ? 'border-red-500' : ''}`}
                                             onChange={(e) =>
                                                 setData(
                                                     "speed_mb",
@@ -453,7 +455,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                 type="number"
                                                 name="after_daily_limit_speed_mb"
                                                 value={data.after_daily_limit_speed_mb}
-                                                className="mt-1 block w-full"
+                                                className={`mt-1 block w-full ${errors.after_daily_limit_speed_mb ? 'border-red-500' : ''}`}
                                                 onChange={(e) =>
                                                     setData(
                                                         "after_daily_limit_speed_mb",
@@ -507,7 +509,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                     id={`from_${index}`}
                                                     type="time"
                                                     value={slot.from}
-                                                    className="mt-1 block w-full"
+                                                    className={`mt-1 block w-full ${errors.speed_slots ? 'border-red-500' : ''}`}
                                                     onChange={(e) =>
                                                         handleSpeedSlotChange(
                                                             index,
@@ -528,7 +530,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                     id={`to_${index}`}
                                                     type="time"
                                                     value={slot.to}
-                                                    className="mt-1 block w-full"
+                                                    className={`mt-1 block w-full ${errors.speed_slots ? 'border-red-500' : ''}`}
                                                     onChange={(e) =>
                                                         handleSpeedSlotChange(
                                                             index,
@@ -549,7 +551,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                     id={`speed_${index}`}
                                                     type="number"
                                                     value={slot.speed_mb}
-                                                    className="mt-1 block w-full"
+                                                    className={`mt-1 block w-full ${errors.speed_slots ? 'border-red-500' : ''}`}
                                                     onChange={(e) =>
                                                         handleSpeedSlotChange(
                                                             index,
@@ -653,7 +655,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                     value={
                                                         data.night_free_start_time
                                                     }
-                                                    className="mt-1 block w-full"
+                                                    className={`mt-1 block w-full ${errors.night_free_start_time ? 'border-red-500' : ''}`}
                                                     onChange={(e) =>
                                                         setData(
                                                             "night_free_start_time",
@@ -682,7 +684,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                     value={
                                                         data.night_free_end_time
                                                     }
-                                                    className="mt-1 block w-full"
+                                                    className={`mt-1 block w-full ${errors.night_free_end_time ? 'border-red-500' : ''}`}
                                                     onChange={(e) =>
                                                         setData(
                                                             "night_free_end_time",
@@ -715,7 +717,7 @@ export default function Create({ auth, festivals, provinces }) {
                                                     value={
                                                         data.night_free_speed_mb
                                                     }
-                                                    className="mt-1 block w-full"
+                                                    className={`mt-1 block w-full ${errors.night_free_speed_mb ? 'border-red-500' : ''}`}
                                                     onChange={(e) =>
                                                         setData(
                                                             "night_free_speed_mb",
@@ -741,7 +743,7 @@ export default function Create({ auth, festivals, provinces }) {
                         {/* Province Selection */}
                         <div>
                             <h3 className="text-lg font-medium text-gray-900 mb-4 pb-2 border-b">
-                                {t('internet_packages.province_selection')}
+                                {t('internet_packages.province_selection')} <span className="text-red-500">*</span>
                             </h3>
                             <div className="space-y-2 mb-4">
                                 <p className="text-sm text-gray-700">
@@ -753,7 +755,11 @@ export default function Create({ auth, festivals, provinces }) {
                                 >
                                     <button
                                         type="button"
-                                        className="relative cursor-pointer w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-right focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        className={`relative cursor-pointer w-full bg-white border ${
+                                            errors.provinces
+                                                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                                                : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                                        } rounded-md shadow-sm pl-3 pr-10 py-2 text-right focus:outline-none focus:ring-1 sm:text-sm`}
                                         onClick={() =>
                                             setIsOpenProvinces(!isOpenProvinces)
                                         }
@@ -761,14 +767,14 @@ export default function Create({ auth, festivals, provinces }) {
                                         aria-expanded="true"
                                         aria-labelledby="listbox-label"
                                     >
-                                        <span className="block truncate">
+                                        <span className={`block truncate ${errors.provinces ? "text-red-500" : ""}`}>
                                             {data.provinces.length > 0
                                                 ? t('internet_packages.selected_provinces', {count: data.provinces.length})
                                                 : t('internet_packages.select_provinces_placeholder')}
                                         </span>
                                         <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                                             <svg
-                                                className="h-5 w-5 text-gray-400"
+                                                className={`h-5 w-5 ${errors.provinces ? "text-red-500" : "text-gray-400"}`}
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 20 20"
                                                 fill="currentColor"

@@ -13,6 +13,7 @@ export default function GeneralDesign({ auth, headerData, footerData }) {
     const message = props.flash?.message;
 
     console.log(footerData, "footerData");
+    console.log(headerData, "headerData");
 
     return (
         <DashboardLayout auth={auth}>

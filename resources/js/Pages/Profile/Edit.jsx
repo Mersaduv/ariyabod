@@ -5,9 +5,9 @@ import DeleteUserForm from "./Partials/DeleteUserForm";
 import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
 import AppLayout from "@/Layouts/AppLayout";
 
-export default function Edit({ auth, mustVerifyEmail, status }) {
+export default function Edit({ auth, mustVerifyEmail, status, headerData, footerData }) {
     return (
-        <AppLayout auth={auth}>
+        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
             <Head title="Profile" />
 
             <div className="py-12 pt-8">

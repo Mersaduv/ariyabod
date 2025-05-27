@@ -480,14 +480,14 @@ export default function Index({
                     )}
 
                     {/* Filter controls */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4 sm1:flex-row items-center justify-between">
                         <div className="flex items-center gap-4">
                             <span className="text-gray-700">
                                 {t("internet_packages.filter")}
                             </span>
                             <div className="flex border rounded-md overflow-hidden">
                                 <button
-                                    className={`px-4 py-2 ${
+                                    className={`px-4 text-sm sm:text-base py-2 ${
                                         filter === "all"
                                             ? "bg-blue-500 text-white"
                                             : "bg-gray-100"
@@ -497,7 +497,7 @@ export default function Index({
                                     {t("internet_packages.all_packages")}
                                 </button>
                                 <button
-                                    className={`px-4 py-2 ${
+                                    className={`px-4 text-sm sm:text-base py-2 ${
                                         filter === "special"
                                             ? "bg-blue-500 text-white"
                                             : "bg-gray-100"
@@ -507,7 +507,7 @@ export default function Index({
                                     {t("internet_packages.special_packages")}
                                 </button>
                                 <button
-                                    className={`px-4 py-2 ${
+                                    className={`px-4 text-sm sm:text-base py-2 ${
                                         filter === "normal"
                                             ? "bg-blue-500 text-white"
                                             : "bg-gray-100"
@@ -521,7 +521,7 @@ export default function Index({
 
                         <Link
                             href={route("admin.internet-packages.create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                            className="px-4 text-sm sm:text-base py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                         >
                             {t("internet_packages.add_package")}
                         </Link>
@@ -954,18 +954,18 @@ export default function Index({
                     {/* Festivals Section */}
                     <div className="mt-12">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">
+                            <h2 className="text-sm xs:text-base sm:text-xl font-semibold">
                                 {t("internet_packages.festivals_events")}
                             </h2>
                             <Link
                                 href={route("admin.festivals.create")}
-                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+                                className="px-4 text-sm sm:text-base py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
                             >
                                 {t("internet_packages.add_festival")}
                             </Link>
                         </div>
 
-                        <div className="p-4 sm:p-8 py-8 bg-white shadow border sm:rounded-lg">
+                        <div className="p-4 sm:p-8 pb-2 py-8 sm:pb-2 bg-white shadow border sm:rounded-lg">
                             {festivals && festivals.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {festivals.map((festival) => {
@@ -1075,6 +1075,14 @@ export default function Index({
                                     {t("internet_packages.no_festivals_found")}
                                 </div>
                             )}
+                            <div className="my-4 flex justify-center items-center">
+                                <Link
+                                    href={route("admin.festivals.index")}
+                                    className="text-sm bg-[#428b7c] text-white px-4 py-2 rounded-md"
+                                >
+                                    {t("internet_packages.view_all")}
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -1095,112 +1103,82 @@ export default function Index({
                         {/* Speed options table */}
                         <div className="p-4 sm:p-8 py-8 bg-white shadow border sm:rounded-lg">
                             {speedOptions && speedOptions.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th
-                                                    className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${
-                                                        lang === "fa"
-                                                            ? "text-right"
-                                                            : "text-left"
-                                                    }`}
-                                                >
-                                                    {t("speed_options.value")}
-                                                </th>
-                                                <th
-                                                    className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${
-                                                        lang === "fa"
-                                                            ? "text-right"
-                                                            : "text-left"
-                                                    }`}
-                                                >
-                                                    {t("speed_options.unit")}
-                                                </th>
-                                                <th
-                                                    className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${
-                                                        lang === "fa"
-                                                            ? "text-right"
-                                                            : "text-left"
-                                                    }`}
-                                                >
-                                                    {t("speed_options.status")}
-                                                </th>
-                                                <th
-                                                    className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${
-                                                        lang === "fa"
-                                                            ? "text-right"
-                                                            : "text-left"
-                                                    }`}
-                                                >
-                                                    {t("speed_options.actions")}
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {speedOptions.map((option) => (
-                                                <tr key={option.id}>
-                                                    <td className="px-6 py-4 text-sm text-gray-900">
-                                                        {option.value}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-900">
-                                                        {option.unit === "kb"
-                                                            ? "Kbps"
-                                                            : option.unit ===
-                                                              "mb"
-                                                            ? "Mbps"
-                                                            : "Gbps"}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-900">
-                                                        <span
-                                                            className={`px-2 inline-flex text-xs font-semibold rounded-full ${
-                                                                option.is_active
-                                                                    ? "bg-green-100 text-green-800"
-                                                                    : "bg-red-100 text-red-800"
-                                                            }`}
-                                                        >
-                                                            {option.is_active
-                                                                ? t(
-                                                                      "speed_options.active"
-                                                                  )
-                                                                : t(
-                                                                      "speed_options.inactive"
-                                                                  )}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm font-medium">
-                                                        <div className="flex gap-3">
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleEditSpeedOption(
-                                                                        option
-                                                                    )
-                                                                }
-                                                                className="text-indigo-600 hover:text-indigo-900"
-                                                            >
-                                                                {t(
-                                                                    "speed_options.edit"
-                                                                )}
-                                                            </button>
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleDeleteSpeedOption(
-                                                                        option.id
-                                                                    )
-                                                                }
-                                                                className="text-red-600 hover:text-red-900"
-                                                            >
-                                                                {t(
-                                                                    "speed_options.delete"
-                                                                )}
-                                                            </button>
-                                                        </div>
-                                                    </td>
+                                <>
+                                    {/* Desktop view */}
+                                    <div className="hidden md:block overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${lang === "fa" ? "text-right" : "text-left"}`}>
+                                                        {t("speed_options.value")}
+                                                    </th>
+                                                    <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${lang === "fa" ? "text-right" : "text-left"}`}>
+                                                        {t("speed_options.unit")}
+                                                    </th>
+                                                    <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${lang === "fa" ? "text-right" : "text-left"}`}>
+                                                        {t("speed_options.status")}
+                                                    </th>
+                                                    <th className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase ${lang === "fa" ? "text-right" : "text-left"}`}>
+                                                        {t("speed_options.actions")}
+                                                    </th>
                                                 </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {speedOptions.map((option) => (
+                                                    <tr key={option.id}>
+                                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                                            {option.value}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                                            {option.unit === "kb" ? "Kbps" : option.unit === "mb" ? "Mbps" : "Gbps"}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                                            <span className={`px-2 inline-flex text-xs font-semibold rounded-full ${option.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                                                {option.is_active ? t("speed_options.active") : t("speed_options.inactive")}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm font-medium">
+                                                            <div className="flex gap-3">
+                                                                <button onClick={() => handleEditSpeedOption(option)} className="text-indigo-600 hover:text-indigo-900">
+                                                                    {t("speed_options.edit")}
+                                                                </button>
+                                                                <button onClick={() => handleDeleteSpeedOption(option.id)} className="text-red-600 hover:text-red-900">
+                                                                    {t("speed_options.delete")}
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Mobile view */}
+                                    <div className="md:hidden">
+                                        <div className="space-y-4">
+                                            {speedOptions.map((option) => (
+                                                <div key={option.id} className="bg-white p-4 rounded-lg border">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            {option.value} {option.unit === "kb" ? "Kbps" : option.unit === "mb" ? "Mbps" : "Gbps"}
+                                                        </div>
+                                                        <span className={`px-2 inline-flex text-xs font-semibold rounded-full ${option.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                                            {option.is_active ? t("speed_options.active") : t("speed_options.inactive")}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-end gap-3 mt-2">
+                                                        <button onClick={() => handleEditSpeedOption(option)} className="text-indigo-600 hover:text-indigo-900 text-sm">
+                                                            {t("speed_options.edit")}
+                                                        </button>
+                                                        <button onClick={() => handleDeleteSpeedOption(option.id)} className="text-red-600 hover:text-red-900 text-sm">
+                                                            {t("speed_options.delete")}
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="text-center py-4 text-gray-500">
                                     {t("speed_options.no_options_found")}

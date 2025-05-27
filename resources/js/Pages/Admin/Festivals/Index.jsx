@@ -111,12 +111,12 @@ export default function Index({ auth, festivals }) {
             <DashboardLayout auth={auth}>
                 <div className="p-4 space-y-6">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-semibold">
+                        <h2 className="text-sm xs:text-base sm:text-xl font-semibold">
                             {t("festivals.management")}
                         </h2>
                         <Link
                             href={route("admin.festivals.create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                            className="px-4 whitespace-nowrap text-sm sm:text-base py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                         >
                             {t("festivals.add_new")}
                         </Link>
@@ -133,7 +133,7 @@ export default function Index({ auth, festivals }) {
                         <span className="text-gray-700">{t("festivals.filter")}</span>
                         <div className="flex border rounded-md overflow-hidden">
                             <button
-                                className={`px-4 py-2 ${
+                                className={`px-4 text-sm sm:text-base py-2 ${
                                     filter === "all"
                                         ? "bg-blue-500 text-white"
                                         : "bg-gray-100"
@@ -143,7 +143,7 @@ export default function Index({ auth, festivals }) {
                                 {t("festivals.all")}
                             </button>
                             <button
-                                className={`px-4 py-2 ${
+                                className={`px-4 text-sm sm:text-base py-2 ${
                                     filter === "active"
                                         ? "bg-blue-500 text-white"
                                         : "bg-gray-100"
@@ -153,7 +153,7 @@ export default function Index({ auth, festivals }) {
                                 {t("festivals.active")}
                             </button>
                             <button
-                                className={`px-4 py-2 ${
+                                className={`px-4 text-sm sm:text-base py-2 ${
                                     filter === "expired"
                                         ? "bg-blue-500 text-white"
                                         : "bg-gray-100"
@@ -244,7 +244,7 @@ export default function Index({ auth, festivals }) {
                                                             "admin.festivals.edit",
                                                             festival.id
                                                         )}
-                                                        className="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition"
+                                                        className="px-3 py-1 whitespace-nowrap bg-indigo-600 text-white text-[13px] xs:text-sm rounded-md hover:bg-indigo-700 transition"
                                                     >
                                                         {t("internet_packages.edit")}
                                                     </Link>
@@ -253,7 +253,7 @@ export default function Index({ auth, festivals }) {
                                                             "admin.festivals.show",
                                                             festival.id
                                                         )}
-                                                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition"
+                                                        className="px-3 py-1 whitespace-nowrap bg-blue-600 text-white text-[13px] xs:text-sm rounded-md hover:bg-blue-700 transition"
                                                     >
                                                         {t("festivals.view_packages")}
                                                     </Link>
@@ -263,7 +263,7 @@ export default function Index({ auth, festivals }) {
                                                                 festival.id
                                                             )
                                                         }
-                                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition"
+                                                        className="px-3 py-1 whitespace-nowrap bg-red-600 text-white text-[13px] xs:text-sm rounded-md hover:bg-red-700 transition"
                                                     >
                                                         {t("internet_packages.delete")}
                                                     </button>

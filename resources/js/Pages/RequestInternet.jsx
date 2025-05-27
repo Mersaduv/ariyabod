@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import { usePage } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import AppLayoutSwitcher from "@/Layouts/AppLayoutSwitcher";
 import { toast } from "react-hot-toast";
 
-export default function RequestInternet({ headerData, footerData }) {
+export default function RequestInternet({ auth, headerData, footerData }) {
     const { t } = useTranslation();
     const { flash } = usePage().props;
     const [showSuccess, setShowSuccess] = useState(false);
@@ -52,7 +52,7 @@ export default function RequestInternet({ headerData, footerData }) {
     };
 
     return (
-        <AppLayout headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
             <Head title="درخواست انترنت" />
 
             <div className="mx-auto px-4 py-16 pt-24 text-center bg-gray-100 mb-10 large-rounded">
@@ -162,6 +162,6 @@ export default function RequestInternet({ headerData, footerData }) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 }

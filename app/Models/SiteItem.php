@@ -15,11 +15,13 @@ class SiteItem extends Model
         'link',
         'image',
         'status',
-        'order'
+        'order',
+        'button_text'
     ];
 
     protected $casts = [
         'title' => 'array',
         'description' => 'array',
+        'button_text' => 'array',
     ];
 }

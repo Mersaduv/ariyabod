@@ -1,12 +1,17 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import AppLayout from "../Layouts/AppLayout";
+import AppLayoutSwitcher from "../Layouts/AppLayoutSwitcher";
 import { Head, Link } from "@inertiajs/react";
 
-const AboutUs = ({ headerData, footerData }) => {
+const AboutUs = ({ auth, headerData, footerData, servicesItems }) => {
     const { t } = useTranslation();
     return (
-        <AppLayout headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher
+            auth={auth}
+            headerData={headerData}
+            footerData={footerData}
+            servicesItems={servicesItems}
+        >
             <Head title={t("nav.aboutUs")} />
 
             <div className="mb-10">
@@ -81,7 +86,7 @@ const AboutUs = ({ headerData, footerData }) => {
                     </svg>
                 </div>
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 };
 

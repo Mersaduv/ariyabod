@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Setting;
+use App\Models\SiteItem;
 
 class ConfirmablePasswordController extends Controller
 {
@@ -21,9 +22,11 @@ class ConfirmablePasswordController extends Controller
     {
         $footer = Setting::where('key', 'footer')->first();
         $footerData = $footer ? json_decode($footer->value, true) : null;
+        $servicesItems = SiteItem::where('type', 'service')->get();
 
         return Inertia::render('Auth/ConfirmPassword', [
             'footerData' => $footerData,
+            'servicesItems' => $servicesItems,
         ]);
     }
 

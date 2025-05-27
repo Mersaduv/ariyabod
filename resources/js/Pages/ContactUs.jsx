@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import { usePage } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import AppLayoutSwitcher from "@/Layouts/AppLayoutSwitcher";
 import { toast } from "react-hot-toast";
 import { IoLocationSharp } from "react-icons/io5";
 import { BsFillTelephoneFill } from "react-icons/bs";
+import TextInput from "@/Components/TextInput";
 
 export default function ContactUs({ auth, headerData, footerData }) {
     const { t, i18n } = useTranslation();
@@ -61,7 +62,7 @@ export default function ContactUs({ auth, headerData, footerData }) {
     };
 
     return (
-        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
             <Head title={t("nav.contactUs")} />
 
             <div className="mb-10 pt-[60px]">
@@ -300,6 +301,6 @@ export default function ContactUs({ auth, headerData, footerData }) {
                     </svg>
                 </div>
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 }

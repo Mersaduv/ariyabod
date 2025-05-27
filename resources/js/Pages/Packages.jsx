@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Head } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import { Head, Link } from "@inertiajs/react";
+import AppLayoutSwitcher from "@/Layouts/AppLayoutSwitcher";
 import { useTranslation } from "react-i18next";
 import { FaCheck, FaTimes, FaFilter, FaAngleDown } from "react-icons/fa";
 import { GrMapLocation } from "react-icons/gr";
@@ -205,7 +205,7 @@ export default function Packages({
     }, []);
 
     return (
-        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
             <Head title="Internet Packages - Ariyabod Companies Group" />
 
             <div className="py-12 bg-gray-50">
@@ -621,6 +621,6 @@ export default function Packages({
                     )}
                 </div>
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 }

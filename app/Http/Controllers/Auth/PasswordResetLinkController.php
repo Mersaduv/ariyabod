@@ -18,8 +18,11 @@ class PasswordResetLinkController extends Controller
      */
     public function create(): Response
     {
+        $servicesItems = \App\Models\SiteItem::where('type', 'service')->get();
+
         return Inertia::render('Auth/ForgotPassword', [
             'status' => session('status'),
+            'servicesItems' => $servicesItems,
         ]);
     }
 

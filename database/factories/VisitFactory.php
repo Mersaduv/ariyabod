@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Visit;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +24,7 @@ class VisitFactory extends Factory
             'ip_address' => $this->faker->ipv4,
             'user_id' => null, // یا 1 برای تست
             'url' => $this->faker->url,
-            'visited_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'visited_at' => Carbon::instance($this->faker->dateTimeBetween('-1 year', 'now')),
         ];
     }
 }

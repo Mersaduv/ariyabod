@@ -5,10 +5,12 @@ import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 
 export default function Register({ headerData, footerData }) {
     const { t } = useTranslation();
+    const { url } = usePage();
+    const isV2 = url === "/v2" || url.startsWith("/v2/");
     const { data, setData, post, processing, errors, reset } = useForm({
         name: "",
         email: "",
@@ -24,7 +26,7 @@ export default function Register({ headerData, footerData }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("register"));
+        post(route(isV2 ? "v2.register" : "register"));
     };
 
     return (
@@ -107,7 +109,7 @@ export default function Register({ headerData, footerData }) {
             <div className="flex items-center justify-start gap-1 w-full sm:max-w-md my-2 mr-2">
                 <div className="text-sm text-gray-600">{t("have_account")}</div>
                 <Link
-                    href={route("login")}
+                    href={route(isV2 ? "v2.login" : "login")}
                     className="primary-color text-sm font-bold underline"
                 >
                     {t("login")}

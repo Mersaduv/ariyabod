@@ -12,4 +12,21 @@ class Visit extends Model
     public $timestamps = false;
 
     protected $fillable = ['ip_address', 'user_id', 'url', 'visited_at'];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'visited_at' => 'datetime',
+    ];
+
+    /**
+     * Get the user that owns the visit.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

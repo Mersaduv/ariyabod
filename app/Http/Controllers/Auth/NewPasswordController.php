@@ -21,9 +21,12 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request): Response
     {
+        $servicesItems = \App\Models\SiteItem::where('type', 'service')->get();
+
         return Inertia::render('Auth/ResetPassword', [
             'email' => $request->email,
             'token' => $request->route('token'),
+            'servicesItems' => $servicesItems,
         ]);
     }
 

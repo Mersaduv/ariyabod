@@ -1,5 +1,5 @@
+import AppLayoutSwitcher from "../Layouts/AppLayoutSwitcher";
 import { Head } from "@inertiajs/react";
-import AppLayout from "../Layouts/AppLayout";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useRef } from "react";
 
@@ -592,7 +592,7 @@ export default function CalculateBundle({ auth, headerData, footerData, speedOpt
     };
 
     return (
-        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
             <Head title={t("calculator.title")} />
 
             <div className="container mx-auto px-4 py-16 pt-24 text-center">
@@ -704,6 +704,6 @@ export default function CalculateBundle({ auth, headerData, footerData, speedOpt
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 }

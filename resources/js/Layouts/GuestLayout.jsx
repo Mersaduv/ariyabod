@@ -1,13 +1,16 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
-import { Link } from "@inertiajs/react";
-import AppLayout from "./AppLayout";
+import { Link, usePage } from "@inertiajs/react";
+import AppLayoutSwitcher from "./AppLayoutSwitcher";
 
-export default function Guest({ children, headerData, footerData }) {
+export default function Guest({ children, headerData, footerData, servicesItems }) {
+    const { url } = usePage();
+    const isV2 = url === '/v2' || url.startsWith('/v2/');
+
     return (
-        <AppLayout headerData={headerData} footerData={footerData}>
-            <div className={`min-h-screen ${headerData && headerData.status ? "pt-[136px]" : ""} flex flex-col sm:justify-start items-center bg-gray-50`}>
+        <AppLayoutSwitcher headerData={headerData} footerData={footerData} servicesItems={servicesItems}>
+            <div className={`min-h-screen ${headerData && headerData.status ? "pt-[136px]" : "pt-[100px]"} flex flex-col sm:justify-start items-center bg-gray-50`}>
                 <div className="mb-4">
-                    <Link href="/">
+                    <Link href={isV2 ? "/v2" : "/"}>
                         <ApplicationLogo
                             className={"inline-block w-[250px] mr-2"}
                         />
@@ -29,6 +32,6 @@ export default function Guest({ children, headerData, footerData }) {
                     </Link>
                 </div> */}
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 }

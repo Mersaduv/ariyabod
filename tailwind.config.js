@@ -13,6 +13,7 @@ export default {
     theme: {
         screens: {
             sm: "640px",
+            sm1: "690px",
             xxm: "374px",
             mxx: "330px",
             md: "768px",

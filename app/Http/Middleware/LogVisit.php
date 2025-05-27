@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Visit;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class LogVisit
 {
@@ -17,12 +18,14 @@ class LogVisit
      */
     public function handle(Request $request, Closure $next)
     {
-        Visit::create([
-            'ip_address' => $request->ip(),
-            'user_id' => Auth::id(),
-            'url' => $request->path(),
-            'visited_at' => now(),
-        ]);
+        if (Auth::id()) {
+            Visit::create([
+                'ip_address' => $request->ip(),
+                'user_id' => Auth::id(),
+                'url' => $request->path(),
+                'visited_at' => Carbon::now(),
+            ]);
+        }
 
         return $next($request);
     }

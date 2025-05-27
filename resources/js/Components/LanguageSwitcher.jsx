@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { IoIosArrowDown } from "react-icons/io";
 import { IoLanguage } from "react-icons/io5";
+import { MdOutlineLanguage } from "react-icons/md";
+
 const languages = [
     { code: "fa", label: "دری | فارسی" },
     { code: "ps", label: "پشتو" },
     { code: "en", label: "English" },
 ];
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ v2 }) {
     const { i18n } = useTranslation();
     const currentLang = i18n.language;
     const [open, setOpen] = useState(false);
@@ -40,12 +43,17 @@ export default function LanguageSwitcher() {
         <div className="relative inline-block text-left" ref={dropdownRef}>
             <button
                 onClick={() => setOpen(!open)}
-                className=" flex items-center gap-1 border p-[5px] rounded-lg hover:bg-[#ffffff2b]"
+                className=" px-2 flex items-center gap-1 border p-[5px] rounded-lg hover:bg-[#ffffff2b]"
             >
-                <IoLanguage />
+                {v2 ? <MdOutlineLanguage /> : <IoLanguage />}
                 <div className="text-sm">
-                    {languages.find((lang) => lang.code === currentLang)?.label}
+                    {v2 ? languages.find((lang) => lang.code === currentLang)?.code : languages.find((lang) => lang.code === currentLang)?.label}
                 </div>
+                {v2 ? (
+                    <IoIosArrowDown
+                        className={`${open ? "rotate-180" : ""}`}
+                    />
+                ) : null}
             </button>
 
             {open && (

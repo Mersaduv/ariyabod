@@ -20,6 +20,7 @@
         "vite": "^5.0.0"
     },
     "dependencies": {
+        "@inertiajs/inertia": "^0.11.1",
         "@tiptap/extension-image": "^2.12.0",
         "@tiptap/extension-table": "^2.12.0",
         "@tiptap/extension-text-align": "^2.12.0",
@@ -27,12 +28,16 @@
         "@tiptap/starter-kit": "^2.12.0",
         "aos": "^2.3.4",
         "canvas-gauges": "^2.1.7",
+        "compression-webpack-plugin": "^11.1.0",
         "date-fns": "^4.1.0",
         "i18next": "^25.1.1",
         "keen-slider": "^6.8.6",
+        "moment": "^2.30.1",
+        "moment-jalaali": "^0.10.4",
         "react-hot-toast": "^2.5.2",
         "react-i18next": "^15.5.1",
         "react-icons": "^5.5.0",
+        "react-lazy-load-image-component": "^1.6.3",
         "react-slick": "^0.30.3",
         "recharts": "^2.15.3",
         "tailwindcss-rtl": "^0.9.0"

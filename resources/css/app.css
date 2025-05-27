@@ -190,7 +190,6 @@ body.rtl {
     left: calc(50% + var(--x) - 75px);
 }
 
-
 @media (max-width: 1280px) {
     .circle-item {
         top: calc(50% + var(--y) - 65px);
@@ -220,8 +219,8 @@ body.rtl {
     left: 50%;
     transform: translate(-50%, -50%);
     position: absolute;
-  }
-  .bar {
+}
+.bar {
     width: 7px;
     height: 30px;
     /* background: ; */
@@ -231,71 +230,157 @@ body.rtl {
     border-top-left-radius: 20px;
     /*   box-shadow:5px 10px 20px inset rgba(255,23,25.2); */
     animation: loader 1.2s linear infinite;
-  }
-  .bar1 {
+}
+.bar1 {
     animation-delay: 0.1s;
-  }
-  .bar2 {
+}
+.bar2 {
     animation-delay: 0.2s;
-  }
-  .bar3 {
+}
+.bar3 {
     animation-delay: 0.3s;
-  }
-  .bar4 {
+}
+.bar4 {
     animation-delay: 0.4s;
-  }
-  .bar5 {
+}
+.bar5 {
     animation-delay: 0.5s;
-  }
-  .bar6 {
+}
+.bar6 {
     animation-delay: 0.6s;
-  }
-  .bar7 {
+}
+.bar7 {
     animation-delay: 0.7s;
-  }
-  .bar8 {
+}
+.bar8 {
     animation-delay: 0.8s;
-  }
+}
 
-  @keyframes loader {
+@keyframes loader {
     0% {
-      transform: scaleY(0.1);
+        transform: scaleY(0.1);
         background: #428b7c;
     }
     50% {
-      transform: scaleY(1);
-      background: yellowgreen;
+        transform: scaleY(1);
+        background: yellowgreen;
     }
     100% {
-      transform: scaleY(0.1);
-      background: transparent;
+        transform: scaleY(0.1);
+        background: transparent;
     }
-  }
+}
 
-
-  .tools-item {
-    --g: 4px;     /* the gap */
-    --b: 8px;    /* border thickness*/
+.tools-item {
+    --g: 4px; /* the gap */
+    --b: 8px; /* border thickness*/
     --c: #669706; /* the color */
-
 
     padding: calc(var(--g) + var(--b));
     --_c: #0000 0 25%, var(--c) 0 50%;
-    --_g1: repeating-linear-gradient(90deg ,var(--_c)) repeat-x;
-    --_g2: repeating-linear-gradient(180deg,var(--_c)) repeat-y;
-    background:
-      var(--_g1) var(--_p, 25%) 0   ,var(--_g2) 0    var(--_p,125%),
-      var(--_g1) var(--_p,125%) 100%,var(--_g2) 100% var(--_p, 25%);
-    background-size: 200% var(--b),var(--b) 200%;
+    --_g1: repeating-linear-gradient(90deg, var(--_c)) repeat-x;
+    --_g2: repeating-linear-gradient(180deg, var(--_c)) repeat-y;
+    background: var(--_g1) var(--_p, 25%) 0, var(--_g2) 0 var(--_p, 125%),
+        var(--_g1) var(--_p, 125%) 100%, var(--_g2) 100% var(--_p, 25%);
+    background-size: 200% var(--b), var(--b) 200%;
     cursor: pointer;
     filter: grayscale(1%);
-    transition: .3s;
-  }
-  .tools-item:hover {
+    transition: 0.3s;
+}
+.tools-item:hover {
     --_p: 75%;
     filter: grayscale(0%);
+}
+
+.large-rounded {
+    border-radius: 0 0 50% 50% / 50px;
+}
+
+.v2-menu {
+    display: flex;
+    /* font: bold 1.5rem sans-serif; */
+    font-weight: 600;
+    text-transform: uppercase;
+    color: grey;
+    padding: 0;
+    margin: 0;
   }
 
-  .large-rounded {
-    border-radius: 0 0 50% 50% / 50px;
+  .v2-item {
+    padding: 0 10px 12px 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+    font-size: 16px;
   }
+
+  .v2-item:hover {
+    color: #428b7c;
+  }
+
+  .v2-item::before {
+    content: "";
+    position: absolute;
+    inset: calc(100% - 3px) 0 0 0;
+    background: #428b7c;
+    scale: 0 1;
+    transition: 0.3s, translate 0s 0.3s;
+    transform-origin: left;
+  }
+
+  .v2-item:hover::before {
+    scale: 1;
+    translate: 0;
+    transition: 0.3s;
+  }
+
+  /* .v2-menu:hover .v2-item::before {
+    scale: 1;
+  } */
+
+  /* RTL Logic */
+  html[dir="rtl"] .v2-item:has(~ .v2-item:hover)::before {
+    translate: -100% 0;
+    transition: 0.2s 0.2s, scale 0s 0.4s;
+  }
+
+  html[dir="rtl"] .v2-item:hover ~ .v2-item::before {
+    translate: 100% 0;
+    transition: 0.2s 0.2s, scale 0s 0.4s;
+  }
+
+  /* LTR Logic */
+  html[dir="ltr"] .v2-item:has(~ .v2-item:hover)::before {
+    translate: 100% 0;
+    transition: 0.2s 0.2s, scale 0s 0.4s;
+  }
+
+  html[dir="ltr"] .v2-item:hover ~ .v2-item::before {
+    translate: -100% 0;
+    transition: 0.2s 0.2s, scale 0s 0.4s;
+  }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #428b7c;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #357a6b;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #428b7c #f1f1f1;
+}

@@ -1,5 +1,5 @@
+import AppLayoutSwitcher from "../Layouts/AppLayoutSwitcher";
 import { Head } from "@inertiajs/react";
-import AppLayout from "../Layouts/AppLayout";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useEffect } from "react";
 
@@ -114,7 +114,7 @@ export default function InternetBandwidthCalculator({ auth, headerData, footerDa
     };
 
     return (
-        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
             <Head title={t("calculator.bandwidth_calculator") || "محاسبه پهنای اینترنت"} />
 
             <div className="container mx-auto px-4 py-16 pt-24 text-center">
@@ -242,6 +242,6 @@ export default function InternetBandwidthCalculator({ auth, headerData, footerDa
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 }

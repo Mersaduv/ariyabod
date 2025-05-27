@@ -1,5 +1,5 @@
 import { Link, Head } from "@inertiajs/react";
-import AppLayout from "../Layouts/AppLayout";
+import AppLayoutSwitcher from "../Layouts/AppLayoutSwitcher";
 import { useTranslation } from "react-i18next";
 import MainSlider from "@/Components/sliders/MainSlider";
 import React, { useRef, useState, useEffect } from "react";
@@ -186,19 +186,23 @@ export default function Welcome({
 
     useEffect(() => {
         AOS.init({
-            duration: 1000, // مدت زمان انیمیشن‌ها (ms)
-            once: true, // فقط یک بار هنگام scroll ظاهر بشه
+            duration: 1000,
+            once: true,
         });
     }, []);
 
     return (
-        <AppLayout auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher
+            auth={auth}
+            headerData={headerData}
+            footerData={footerData}
+        >
             <div>
                 <Head title="Ariyabod Companies Group" />
 
                 <>
                     <div
-                        className={`h-[780px] bg-[#97c3b9] bg-cover bg-center ${
+                        className={`h-[780px]  bg-[#97c3b9] bg-cover bg-center ${
                             headerData && headerData.status
                                 ? "pt-[80px]"
                                 : "pt-[10px]"
@@ -932,85 +936,23 @@ export default function Welcome({
                         {/* package management section */}
                         <div className="px-4 mt-20 pb-10">
                             <h1 className="text-4xl font-semibold w-full text-center mb-6 pt-10">
-                                اطلاعات بسته انترنتی شما
+                                {t("package_management.title")}
                             </h1>
                             <p className="text-center text-lg">
-                                یکی از هدف های ایجاد این پنل کاربردی مشاهده و
-                                اطلاع از حجم باقیمانده بسته اینترنتی تان می
-                                باشد. خوشبختانه این امر به سادگی امکان پذیر می
-                                باشد ، چرا که به محض ورود به طور اتوماتیک وارد
-                                پنل کاربری خود میشوید و روز های باقیمانده و حجم
-                                باقیمانده ، همچنین حجم مصرفی وگزارش دقیق ازتمامی
-                                بسته هایی که در گذشته و حال فعال کردید را
-                                میتوانید مشاهده نمایید.
+                                {t("package_management.description")}
                             </p>
                             <h2 className="text-xl font-semibold text-center mt-3">
-                                قابل ذکر است که این ویژگی مخصوص مشترکین شرکت
-                                خدمات تکنولوژی و اینترنتی آریابُد میباشد.
+                                {t("package_management.note")}
                             </h2>
                             <div className="flex justify-center">
                                 <button className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition w-fit mx-auto mt-4">
-                                    اطلاعات بسته شما
+                                    {t("package_management.view_package_info")}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </>
             </div>
-        </AppLayout>
+        </AppLayoutSwitcher>
     );
 }
-// const WheelControls = (slider) => {
-//     let touchTimeout;
-//     let position;
-//     let wheelActive;
-
-//     function dispatch(e, name) {
-//         position.x -= e.deltaX;
-//         position.y -= e.deltaY;
-//         slider.container.dispatchEvent(
-//             new CustomEvent(name, {
-//                 detail: {
-//                     x: position.x,
-//                     y: position.y,
-//                 },
-//             })
-//         );
-//     }
-
-//     function wheelStart(e) {
-//         position = {
-//             x: e.pageX,
-//             y: e.pageY,
-//         };
-//         dispatch(e, "ksDragStart");
-//     }
-
-//     function wheel(e) {
-//         dispatch(e, "ksDrag");
-//     }
-
-//     function wheelEnd(e) {
-//         dispatch(e, "ksDragEnd");
-//     }
-
-//     function eventWheel(e) {
-//         e.preventDefault();
-//         if (!wheelActive) {
-//             wheelStart(e);
-//             wheelActive = true;
-//         }
-//         wheel(e);
-//         clearTimeout(touchTimeout);
-//         touchTimeout = setTimeout(() => {
-//             wheelActive = false;
-//             wheelEnd(e);
-//         }, 50);
-//     }
-
-//     slider.on("created", () => {
-//         slider.container.addEventListener("wheel", eventWheel, {
-//             passive: false,
-//         });
-//     });
-// };

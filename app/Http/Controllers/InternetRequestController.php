@@ -14,7 +14,11 @@ class InternetRequestController extends Controller
      */
     public function show()
     {
-        return Inertia::render('RequestInternet');
+        $servicesItems = \App\Models\SiteItem::where('type', 'service')->get();
+
+        return Inertia::render('RequestInternet', [
+            'servicesItems' => $servicesItems,
+        ]);
     }
 
     /**

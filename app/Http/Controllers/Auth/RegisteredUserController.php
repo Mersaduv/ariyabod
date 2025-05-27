@@ -21,7 +21,11 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        $servicesItems = \App\Models\SiteItem::where('type', 'service')->get();
+
+        return Inertia::render('Auth/Register', [
+            'servicesItems' => $servicesItems,
+        ]);
     }
 
     /**

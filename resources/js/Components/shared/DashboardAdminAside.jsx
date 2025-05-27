@@ -8,6 +8,7 @@ import { Link, usePage } from "@inertiajs/react";
 import { IoLanguage, IoLogOutOutline } from "react-icons/io5";
 import React, { useEffect, useRef, useState } from "react";
 import LanguageSwitcher from "../LanguageSwitcher";
+import { TfiLayoutSliderAlt } from "react-icons/tfi";
 const languages = [
     { code: "fa", label: "دری | فارسی" },
     { code: "ps", label: "پشتو" },
@@ -46,13 +47,19 @@ const menuItems = [
     },
     {
         id: 6,
+        name: "slider_items",
+        Icon: TfiLayoutSliderAlt,
+        path: ["/admin/slider-items"],
+    },
+    {
+        id: 7,
         name: "language_switcher",
         path: [],
         Icon: IoLanguage,
         subItems: languages,
     },
     {
-        id: 7,
+        id: 8,
         name: "logout",
         Icon: IoLogOutOutline,
         path: ["logout"],

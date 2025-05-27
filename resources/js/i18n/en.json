@@ -95,6 +95,7 @@
             },
             "bandwidthCalculator": "Internet Bandwidth Calculator"
         },
+        "services": "Services",
         "internetRequest": "Internet Request",
         "packages": "Packages",
         "aboutUs": "About Us",
@@ -131,6 +132,46 @@
     "social_media_link": "Link",
     "social_media_image": "Image",
     "add_social_media": "Add Social Media",
+
+    "slider_items": {
+        "title": "Slider Management",
+        "management": "Slider Management",
+        "management_description": "Manage the slider on the homepage. Add, edit, and remove slides.",
+        "background": "Slider Background",
+        "background_image": "Background Image",
+        "background_description": "This image will be used as the background for the slider section. Recommended size: 1920x500px.",
+        "save_background": "Save Background Image",
+        "slides": "Slider Items",
+        "items": "Items",
+        "no_slides": "No slides have been added yet. Click the button below to add your first slide.",
+        "add_first_slide": "Add First Slide",
+        "add_slide": "Add Slide",
+        "save_slides": "Save Slides",
+        "slide": "Slide",
+        "slide_image": "Slide Image",
+        "upload_image": "Click to upload an image",
+        "recommended_size": "Recommended size: 800x600px",
+        "select_image": "Select Image",
+        "description": "You can add up to 5 slides",
+        "update_success": "Slider items updated successfully!",
+        "max_items_error": "You can only add up to 5 slides.",
+        "learn_more": "Learn More",
+        "fields": {
+            "title_fa": "Title (Persian)",
+            "title_en": "Title (English)",
+            "title_ps": "Title (Pashto)",
+            "description_fa": "Description (Persian)",
+            "description_en": "Description (English)",
+            "description_ps": "Description (Pashto)",
+            "button_text_fa": "Button Text (Persian)",
+            "button_text_en": "Button Text (English)",
+            "button_text_ps": "Button Text (Pashto)",
+            "link": "Button Link",
+            "active": "Active",
+            "status": "Status"
+        }
+    },
+
     "circle_items": {
         "title": "Circle Items",
         "enable_circle": "Enable circle items",
@@ -459,5 +500,11 @@
             "description": "Activities in this section include design, branding, social media management, office sets, and printing."
         },
         "image_alt": "About Us"
+    },
+    "package_management": {
+        "title": "Your Internet Package Information",
+        "description": "One of the goals of creating this user panel is to view and be informed about your remaining internet package volume. Fortunately, this is easily possible, as you automatically log into your user panel upon entry and can view the remaining days, remaining volume, usage volume, and a detailed report of all packages you have activated in the past and present.",
+        "note": "It should be noted that this feature is exclusive to subscribers of Ariyabod Technology and Internet Services Company.",
+        "view_package_info": "Your Package Information"
     }
 }

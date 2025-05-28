@@ -2,991 +2,581 @@ import { Head } from "@inertiajs/react";
 import AppLayoutSwitcher from "../Layouts/AppLayoutSwitcher";
 import { useTranslation } from "react-i18next";
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 
 export default function NetworkTest({ auth, headerData, footerData }) {
     const { t } = useTranslation();
-    const canvasRef = useRef(null);
-    const animationRef = useRef(null);
-    const lang = localStorage.getItem("lang") || "fa";
-    const [ping, setPing] = useState(null);
-    const [download, setDownload] = useState(null);
-    const [upload, setUpload] = useState(null);
-    const [ip, setIP] = useState(null);
-    const [location, setLocation] = useState(null);
-    const [server, setServer] = useState(t("network_test.server_name"));
-    const [country, setCountry] = useState(null);
-    const [isTesting, setIsTesting] = useState(false);
-    const [testPhase, setTestPhase] = useState(null); // 'ping', 'download', 'upload'
-    const [currentSpeed, setCurrentSpeed] = useState(0);
-    const [targetSpeed, setTargetSpeed] = useState(0);
-    const [showServerSection, setShowServerSection] = useState(false);
-    const [showTestInterface, setShowTestInterface] = useState(false); // New state to control visibility
-    const apiKey = import.meta.env.VITE_IP_API_KEY;
+    const [downloadSpeed, setDownloadSpeed] = useState({ method1: null, method2: null, method3: null });
+    const [uploadSpeed, setUploadSpeed] = useState({ method1: null, method2: null, method3: null });
+    const [ping, setPing] = useState({ method1: null, method2: null, method3: null });
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [averages, setAverages] = useState({ download: null, upload: null, ping: null });
 
-    // اندازه‌گیری شبکه
-    const measureNetwork = async () => {
-        if (!showTestInterface) {
-            // First show the interface with animation, then start test
-            setShowTestInterface(true);
-            // Wait for animation to complete
-            await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-
-        setIsTesting(true);
-        setTargetSpeed(0);
-        setCurrentSpeed(0);
-        setShowServerSection(false);
-
-        // Reset all previous test results
-        setPing(null);
-        setDownload(null);
-        setUpload(null);
-        setIP(null);
-        setLocation(null);
-        setServer(t("network_test.server_name"));
-        setCountry(null);
-
-        // Ping Test - Multiple targets
-        setTestPhase("ping");
-        let pingSum = 0;
-        const pingCount = 5;
-        const pingTargets = [
-            "https://www.google.com",
-            "https://www.cloudflare.com",
-            "https://www.amazon.com",
-        ];
-
-        for (let i = 0; i < pingCount; i++) {
-            const target = pingTargets[i % pingTargets.length];
-            const start = performance.now();
-            try {
-                await fetch(`${target}?t=${Date.now()}`, {
-                    mode: "no-cors",
-                    cache: "no-store",
+    // Method 1: File download/upload timing with multiple samples
+    const measureSpeedMethod1 = async () => {
+        try {
+            // Multiple ping samples for accuracy
+            let pingResults = [];
+            for (let i = 0; i < 5; i++) {
+                const pingStart = performance.now();
+                await axios.get('/api/ping-test', {
+                    params: { timestamp: new Date().getTime() },
+                    // Cancel if it takes too long
+                    timeout: 5000
                 });
-                const end = performance.now();
-                pingSum += end - start;
-            } catch (error) {
-                console.error("Ping error:", error);
-                pingSum += 500;
+                const pingEnd = performance.now();
+                pingResults.push(pingEnd - pingStart);
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 200));
             }
-            await new Promise((resolve) => setTimeout(resolve, 300));
+
+            // Remove outliers (highest and lowest)
+            pingResults.sort((a, b) => a - b);
+            if (pingResults.length > 2) {
+                pingResults = pingResults.slice(1, -1);
+            }
+
+            // Calculate average ping
+            const avgPing = pingResults.reduce((a, b) => a + b, 0) / pingResults.length;
+            setPing(prev => ({ ...prev, method1: avgPing.toFixed(2) }));
+
+            // Multiple download samples of increasing size for better accuracy
+            const downloadSizes = [1, 2, 5, 10].map(size => size * 1024 * 1024); // 1MB, 2MB, 5MB, 10MB
+            let downloadResults = [];
+
+            for (const fileSize of downloadSizes) {
+                const downloadStart = performance.now();
+                await axios.get('/api/test-download', {
+                    params: {
+                        size: fileSize,
+                        timestamp: new Date().getTime()
+                    },
+                    responseType: 'blob',
+                    timeout: 30000 // 30 seconds timeout
+                });
+                const downloadEnd = performance.now();
+                const downloadDuration = (downloadEnd - downloadStart) / 1000; // seconds
+                // Calculate speed in Mbps (megabits per second)
+                const downloadSpeedMbps = (fileSize * 8 / 1024 / 1024) / downloadDuration;
+                downloadResults.push(downloadSpeedMbps);
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Use larger sample sizes with more weight (simple weighted average)
+            const totalWeight = downloadSizes.reduce((sum, size, i) => sum + size, 0);
+            const weightedAvgDownload = downloadResults.reduce((sum, speed, i) =>
+                sum + (speed * downloadSizes[i]), 0) / totalWeight;
+
+            setDownloadSpeed(prev => ({ ...prev, method1: weightedAvgDownload.toFixed(2) }));
+
+            // Multiple upload samples
+            const uploadSizes = [1, 2, 5].map(size => size * 1024 * 1024); // 1MB, 2MB, 5MB
+            let uploadResults = [];
+
+            for (const uploadSize of uploadSizes) {
+                const testData = new Blob([new ArrayBuffer(uploadSize)]);
+                const uploadStart = performance.now();
+                await axios.post('/api/test-upload', testData, {
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                    timeout: 30000 // 30 seconds timeout
+                });
+                const uploadEnd = performance.now();
+                const uploadDuration = (uploadEnd - uploadStart) / 1000; // seconds
+                const uploadSpeedMbps = (uploadSize * 8 / 1024 / 1024) / uploadDuration; // Mbps
+                uploadResults.push(uploadSpeedMbps);
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Weighted average for upload as well
+            const totalUploadWeight = uploadSizes.reduce((sum, size) => sum + size, 0);
+            const weightedAvgUpload = uploadResults.reduce((sum, speed, i) =>
+                sum + (speed * uploadSizes[i]), 0) / totalUploadWeight;
+
+            setUploadSpeed(prev => ({ ...prev, method1: weightedAvgUpload.toFixed(2) }));
+        } catch (error) {
+            console.error("Method 1 error:", error);
+            setErrorMessage(prev => prev + " Method 1 failed. ");
+        }
+    };
+
+    // Method 2: WebRTC connection stats with better peer connection handling
+    const measureSpeedMethod2 = async () => {
+        try {
+            // Create RTCPeerConnection with STUN servers
+            const pc = new RTCPeerConnection({
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+            });
+
+            // Create data channel with specific options for speed testing
+            const dataChannel = pc.createDataChannel('speedtest', {
+                ordered: true,
+                maxRetransmits: 1
+            });
+
+            // Data tracking variables
+            let downloadStart = null;
+            let uploadStart = null;
+            let downloadBytes = 0;
+            let uploadBytes = 0;
+            let downloadInterval = null;
+            let uploadInterval = null;
+            let pingStart = performance.now();
+            let pingMeasured = false;
+            let pingValue = 0;
+
+            // Add event handlers
+            dataChannel.onopen = () => {
+                // Start downloading (receiving) data
+                downloadStart = performance.now();
+
+                // Send some data to measure upload speed
+                uploadStart = performance.now();
+                const uploadData = new ArrayBuffer(16 * 1024); // 16KB chunks
+
+                // Send data continuously for 5 seconds to measure upload
+                uploadInterval = setInterval(() => {
+                    try {
+                        dataChannel.send(uploadData);
+                        uploadBytes += uploadData.byteLength;
+                    } catch (e) {
+                        console.warn("Error sending data:", e);
+                    }
+                }, 10); // Try to send every 10ms
+
+                // Stop upload test after 5 seconds
+                setTimeout(() => {
+                    if (uploadInterval) {
+                        clearInterval(uploadInterval);
+                        uploadInterval = null;
+
+                        // Calculate upload speed if we have data
+                        if (uploadBytes > 0) {
+                            const uploadDuration = (performance.now() - uploadStart) / 1000;
+                            const uploadSpeed = ((uploadBytes * 8) / uploadDuration) / 1000000; // Mbps
+                            setUploadSpeed(prev => ({ ...prev, method2: uploadSpeed.toFixed(2) }));
+                        }
+                    }
+                }, 5000);
+            };
+
+            dataChannel.onmessage = (event) => {
+                // Track downloaded data
+                downloadBytes += event.data.size || event.data.byteLength || 0;
+
+                // Measure ping on first message if not already measured
+                if (!pingMeasured) {
+                    pingValue = performance.now() - pingStart;
+                    pingMeasured = true;
+                    setPing(prev => ({ ...prev, method2: pingValue.toFixed(2) }));
+                }
+            };
+
+            // Create offer and set local description
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            // Set timeout to close connection and calculate speeds
+            setTimeout(() => {
+                // Calculate download speed if we have data
+                if (downloadBytes > 0 && downloadStart) {
+                    const downloadDuration = (performance.now() - downloadStart) / 1000;
+                    const downloadSpeed = ((downloadBytes * 8) / downloadDuration) / 1000000; // Mbps
+                    setDownloadSpeed(prev => ({ ...prev, method2: downloadSpeed.toFixed(2) }));
+                }
+
+                // Clean up
+                if (uploadInterval) clearInterval(uploadInterval);
+                if (downloadInterval) clearInterval(downloadInterval);
+                dataChannel.close();
+                pc.close();
+            }, 10000); // Run test for 10 seconds
+
+            // If we haven't received ping after 5 seconds, use ICE candidate round trip time
+            pc.onicecandidate = (event) => {
+                if (event.candidate && !pingMeasured) {
+                    pingValue = performance.now() - pingStart;
+                    pingMeasured = true;
+                    setPing(prev => ({ ...prev, method2: pingValue.toFixed(2) }));
+                }
+            };
+        } catch (error) {
+            console.error("Method 2 error:", error);
+            setErrorMessage(prev => prev + " Method 2 failed. ");
+        }
+    };
+
+    // Method 3: XHR progressive download/upload with multiple sample points
+    const measureSpeedMethod3 = async () => {
+        try {
+            // Multiple ping samples
+            let pingSum = 0;
+            let pingCount = 0;
+
+            for (let i = 0; i < 5; i++) {
+                const pingXhr = new XMLHttpRequest();
+                pingXhr.open('GET', '/api/ping-test?timestamp=' + new Date().getTime(), true);
+                const pingStart = performance.now();
+
+                await new Promise((resolve, reject) => {
+                    pingXhr.onload = () => {
+                        if (pingXhr.status === 200) {
+                            const pingEnd = performance.now();
+                            pingSum += (pingEnd - pingStart);
+                            pingCount++;
+                            resolve();
+                        } else {
+                            reject(new Error('Ping request failed'));
+                        }
+                    };
+
+                    pingXhr.onerror = () => reject(new Error('XHR error on ping'));
+                    pingXhr.send();
+                });
+
+                // Short delay between pings
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+
+            if (pingCount > 0) {
+                setPing(prev => ({ ...prev, method3: (pingSum / pingCount).toFixed(2) }));
+            }
+
+            // Download speed test with progressive measurements
+            const downloadSizes = [2, 5, 10].map(size => size * 1024 * 1024); // 2MB, 5MB, 10MB
+            let downloadResults = [];
+
+            for (const downloadSize of downloadSizes) {
+                await new Promise((resolve) => {
+                    const downloadXhr = new XMLHttpRequest();
+                    downloadXhr.open('GET', `/api/test-download?size=${downloadSize}&timestamp=${new Date().getTime()}`, true);
+                    downloadXhr.responseType = 'arraybuffer';
+
+                    const downloadStart = performance.now();
+                    let lastDownloadTimestamp = downloadStart;
+                    let lastDownloadedBytes = 0;
+                    let downloadRates = [];
+
+                    downloadXhr.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const currentTime = performance.now();
+                            const elapsedSeconds = (currentTime - lastDownloadTimestamp) / 1000;
+                            const bytesLoaded = event.loaded - lastDownloadedBytes;
+
+                            // Only log point if we received substantial data and some time passed
+                            if (elapsedSeconds > 0.1 && bytesLoaded > 10000) {
+                                lastDownloadTimestamp = currentTime;
+                                lastDownloadedBytes = event.loaded;
+
+                                const currentRate = (bytesLoaded * 8 / 1024 / 1024) / elapsedSeconds; // Mbps
+                                downloadRates.push(currentRate);
+                            }
+                        }
+                    };
+
+                    downloadXhr.onload = () => {
+                        if (downloadRates.length > 0) {
+                            // Remove outliers (top and bottom 10%)
+                            if (downloadRates.length > 10) {
+                                downloadRates.sort((a, b) => a - b);
+                                const cutLength = Math.floor(downloadRates.length * 0.1);
+                                downloadRates = downloadRates.slice(cutLength, downloadRates.length - cutLength);
+                            }
+
+                            const avgDownloadSpeed = downloadRates.reduce((a, b) => a + b, 0) / downloadRates.length;
+                            downloadResults.push(avgDownloadSpeed);
+                        } else {
+                            // Fallback if progressive calculation didn't work
+                            const totalTime = (performance.now() - downloadStart) / 1000;
+                            const totalSize = downloadSize * 8 / 1024 / 1024; // Mbits
+                            downloadResults.push(totalSize / totalTime);
+                        }
+                        resolve();
+                    };
+
+                    downloadXhr.onerror = () => {
+                        console.error("XHR download error");
+                        resolve();
+                    };
+
+                    downloadXhr.send();
+                });
+
+                // Short delay between downloads
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Calculate weighted average for download
+            if (downloadResults.length > 0) {
+                // More weight to larger file sizes
+                const weightedAvgDownload = downloadResults.reduce((sum, result, i) =>
+                    sum + (result * downloadSizes[i]), 0) / downloadSizes.reduce((a, b) => a + b, 0);
+                setDownloadSpeed(prev => ({ ...prev, method3: weightedAvgDownload.toFixed(2) }));
+            }
+
+            // Upload speed test with progressive measurements
+            const uploadSizes = [1, 3, 5].map(size => size * 1024 * 1024); // 1MB, 3MB, 5MB
+            let uploadResults = [];
+
+            for (const uploadSize of uploadSizes) {
+                await new Promise((resolve) => {
+                    const uploadXhr = new XMLHttpRequest();
+                    const uploadData = new Blob([new ArrayBuffer(uploadSize)]);
+                    uploadXhr.open('POST', '/api/test-upload', true);
+
+                    const uploadStart = performance.now();
+                    let lastUploadTimestamp = uploadStart;
+                    let lastUploadedBytes = 0;
+                    let uploadRates = [];
+
+                    uploadXhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const currentTime = performance.now();
+                            const elapsedSeconds = (currentTime - lastUploadTimestamp) / 1000;
+                            const bytesSent = event.loaded - lastUploadedBytes;
+
+                            // Only log point if we sent substantial data and some time passed
+                            if (elapsedSeconds > 0.1 && bytesSent > 10000) {
+                                lastUploadTimestamp = currentTime;
+                                lastUploadedBytes = event.loaded;
+
+                                const currentRate = (bytesSent * 8 / 1024 / 1024) / elapsedSeconds; // Mbps
+                                uploadRates.push(currentRate);
+                            }
+                        }
+                    };
+
+                    uploadXhr.onload = () => {
+                        if (uploadRates.length > 0) {
+                            // Remove outliers (top and bottom 10%)
+                            if (uploadRates.length > 10) {
+                                uploadRates.sort((a, b) => a - b);
+                                const cutLength = Math.floor(uploadRates.length * 0.1);
+                                uploadRates = uploadRates.slice(cutLength, uploadRates.length - cutLength);
+                            }
+
+                            const avgUploadSpeed = uploadRates.reduce((a, b) => a + b, 0) / uploadRates.length;
+                            uploadResults.push(avgUploadSpeed);
+                        } else {
+                            // Fallback if progressive calculation didn't work
+                            const totalTime = (performance.now() - uploadStart) / 1000;
+                            const totalSize = uploadSize * 8 / 1024 / 1024; // Mbits
+                            uploadResults.push(totalSize / totalTime);
+                        }
+                        resolve();
+                    };
+
+                    uploadXhr.onerror = () => {
+                        console.error("XHR upload error");
+                        resolve();
+                    };
+
+                    uploadXhr.send(uploadData);
+                });
+
+                // Short delay between uploads
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Calculate weighted average for upload
+            if (uploadResults.length > 0) {
+                const weightedAvgUpload = uploadResults.reduce((sum, result, i) =>
+                    sum + (result * uploadSizes[i]), 0) / uploadSizes.reduce((a, b) => a + b, 0);
+                setUploadSpeed(prev => ({ ...prev, method3: weightedAvgUpload.toFixed(2) }));
+            }
+        } catch (error) {
+            console.error("Method 3 error:", error);
+            setErrorMessage(prev => prev + " Method 3 failed. ");
+        }
+    };
+
+    // Calculate weighted averages from all methods
+    const calculateAverages = () => {
+        // Filter out null values and convert to numbers
+        const downloadValues = Object.values(downloadSpeed).filter(val => val !== null).map(Number);
+        const uploadValues = Object.values(uploadSpeed).filter(val => val !== null).map(Number);
+        const pingValues = Object.values(ping).filter(val => val !== null).map(Number);
+
+        // Calculate averages if we have values, giving more weight to methods that are more reliable
+        if (downloadValues.length > 0) {
+            // Method 1 has weight 2, Methods 2&3 have weight 1
+            const weights = [2, 1, 1];
+            let weightSum = 0;
+            let weightedSum = 0;
+
+            downloadValues.forEach((val, idx) => {
+                const weight = weights[idx] || 1;
+                weightedSum += val * weight;
+                weightSum += weight;
+            });
+
+            const avgDownload = weightSum > 0 ? weightedSum / weightSum : 0;
+            setAverages(prev => ({ ...prev, download: avgDownload.toFixed(2) }));
         }
 
-        const averagePing = Math.round(pingSum / pingCount);
-        setPing(averagePing);
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // DOWNLOAD TEST - EXACTLY 14 SECONDS
-        setTestPhase("download");
-        setTargetSpeed(0);
-        setCurrentSpeed(0);
-
-        // Animation stages for exactly 14 seconds total
-        const DOWNLOAD_TEST_DURATION = 14000; // 14 seconds
-        const downloadStartTime = performance.now();
-
-        // Download testing in the background
-        let downloadSpeedMbps = 0;
-        let downloadTestComplete = false;
-
-        // Start actual download test in the background
-        const performDownloadTest = async () => {
-            try {
-                // Use smaller files for testing but maintain progression
-                const downloadFiles = [
-                    {
-                        url: "https://speed.cloudflare.com/100kb.bin",
-                        size: 100 * 1024,
-                    },
-                    {
-                        url: "https://speed.cloudflare.com/1mb.bin",
-                        size: 1 * 1024 * 1024,
-                    },
-                ];
-
-                let totalBytes = 0;
-                let totalTime = 0;
-
-                // Perform early sample to adjust animation speed
-                try {
-                    const sampleStart = performance.now();
-                    const sampleResponse = await fetch(downloadFiles[0].url, {
-                        cache: "no-store",
-                        headers: { "Cache-Control": "no-cache" },
-                    });
-
-                    if (sampleResponse.ok) {
-                        const blob = await sampleResponse.blob();
-                        const sampleEnd = performance.now();
-                        const sampleTime = sampleEnd - sampleStart;
-
-                        if (sampleTime > 0) {
-                            // Calculate a preliminary speed estimate to guide the animation
-                            const sampleSize =
-                                blob.size || downloadFiles[0].size;
-                            const sampleSpeedBps =
-                                (sampleSize * 8) / (sampleTime / 1000);
-                            const sampleSpeedMbps =
-                                sampleSpeedBps / (1024 * 1024);
-                            // Update the global variable to influence animation max
-                            downloadSpeedMbps = sampleSpeedMbps;
-                        }
-                    }
-                } catch (error) {
-                    console.error("Sample speed test error:", error);
-                }
-
-                for (const file of downloadFiles) {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(
-                        () => controller.abort(),
-                        5000
-                    );
-
-                    try {
-                        const start = performance.now();
-                        const response = await fetch(file.url, {
-                            cache: "no-store",
-                            headers: { "Cache-Control": "no-cache" },
-                            signal: controller.signal,
-                        });
-
-                        if (!response.ok) {
-                            throw new Error(
-                                `HTTP error! status: ${response.status}`
-                            );
-                        }
-
-                        const blob = await response.blob();
-                        const end = performance.now();
-
-                        const fileSize = blob.size || file.size;
-                        totalBytes += fileSize;
-                        totalTime += end - start;
-
-                        // Progressive update of download speed for more accurate animation
-                        if (totalTime > 0) {
-                            const currentSpeedBps =
-                                (totalBytes * 8) / (totalTime / 1000);
-                            downloadSpeedMbps = currentSpeedBps / (1024 * 1024);
-                        }
-                    } finally {
-                        clearTimeout(timeoutId);
-                    }
-                }
-
-                if (totalTime > 0) {
-                    const downloadSpeedBps =
-                        (totalBytes * 8) / (totalTime / 1000);
-                    downloadSpeedMbps = downloadSpeedBps / (1024 * 1024);
-                } else {
-                    downloadSpeedMbps = 10 + Math.random() * 10; // Reduced range for fallback
-                }
-            } catch (error) {
-                console.error("Download test error:", error);
-                // Fallback to a more modest realistic value
-                downloadSpeedMbps = 10 + Math.random() * 10;
-            }
-
-            downloadTestComplete = true;
-        };
-
-        // Start the actual download test
-        performDownloadTest();
-
-        // Setup the visual animation for exactly 14 seconds
-        const downloadAnimation = async () => {
-            // We'll dynamically adjust these stages based on measured speed
-            let stages = [
-                { duration: 2000, max: 0, oscillation: 1 }, // Initial ramp up (max will be set dynamically)
-                { duration: 4000, max: 0, oscillation: 2 }, // Mid range speeds
-                { duration: 6000, max: 0, oscillation: 3 }, // High speeds
-                { duration: 2000, max: 0, oscillation: 1.5 }, // Final adjustment
-            ];
-
-            // Default starting values that will be adjusted based on measurements
-            let baseMaxSpeed = 20;
-            let lastMeasuredSpeed = 0;
-
-            let currentStage = 0;
-            let stageStartTime = performance.now();
-            let simulatedSpeed = 0;
-
-            const downloadInterval = setInterval(() => {
-                const now = performance.now();
-                const elapsed = now - downloadStartTime;
-
-                // Update speed estimation based on real measurements
-                if (
-                    downloadSpeedMbps > 0 &&
-                    downloadSpeedMbps !== lastMeasuredSpeed
-                ) {
-                    lastMeasuredSpeed = downloadSpeedMbps;
-
-                    // Calculate a realistic max speed for animation (add some margin but don't exaggerate)
-                    baseMaxSpeed = Math.min(
-                        Math.max(downloadSpeedMbps * 1.3, 10),
-                        100
-                    );
-
-                    // Adjust all stages based on the measured speed
-                    stages = stages.map((stage, index) => {
-                        // Progress through stages with increasing percentages of max speed
-                        const stageMultiplier = [0.4, 0.7, 1.0, 0.9][index];
-                        return {
-                            ...stage,
-                            max: baseMaxSpeed * stageMultiplier,
-                        };
-                    });
-                }
-
-                // Check if we should move to the next stage
-                if (now - stageStartTime > stages[currentStage].duration) {
-                    if (currentStage < stages.length - 1) {
-                        currentStage++;
-                        stageStartTime = now;
-                    }
-                }
-
-                // Calculate simulated speed based on current stage
-                const stage = stages[currentStage];
-                const stageProgress = Math.min(
-                    1,
-                    (now - stageStartTime) / stage.duration
-                );
-
-                // In last stage, gradually converge to the real measured speed if available
-                if (
-                    currentStage === stages.length - 1 &&
-                    downloadSpeedMbps > 0
-                ) {
-                    // More aggressively converge to actual speed in final stage
-                    simulatedSpeed =
-                        simulatedSpeed +
-                        (downloadSpeedMbps - simulatedSpeed) * 0.2;
-                } else {
-                    // Normal animation for earlier stages
-                    // Add randomness for realism
-                    simulatedSpeed +=
-                        Math.random() * stage.oscillation -
-                        stage.oscillation / 2;
-
-                    // Ensure speed stays within stage limits with progressive increase
-                    const targetForStage = stageProgress * stage.max;
-                    if (simulatedSpeed < targetForStage - 10)
-                        simulatedSpeed += 2;
-                    if (simulatedSpeed > targetForStage + 10)
-                        simulatedSpeed -= 1;
-                }
-
-                // Clamp values to be realistic
-                if (simulatedSpeed > stage.max) simulatedSpeed = stage.max;
-                if (simulatedSpeed < 0) simulatedSpeed = 0;
-
-                setTargetSpeed(simulatedSpeed);
-
-                // Check if test duration is complete
-                if (elapsed >= DOWNLOAD_TEST_DURATION) {
-                    clearInterval(downloadInterval);
-
-                    // Use the real result if available, otherwise use the simulated one
-                    if (downloadTestComplete) {
-                        setDownload(downloadSpeedMbps.toFixed(2));
-                        setTargetSpeed(downloadSpeedMbps);
-                    } else {
-                        // Use the last simulated value as it should be close to real by now
-                        setDownload(simulatedSpeed.toFixed(2));
-                        setTargetSpeed(simulatedSpeed);
-                    }
-
-                    // Continue to upload test
-                    startUploadTest();
-                }
-            }, 200);
-        };
-
-        // Start the download animation
-        downloadAnimation();
-
-        // Function to begin upload test (will be called after download completes)
-        const startUploadTest = async () => {
-            // UPLOAD TEST - EXACTLY 14 SECONDS
-            setTestPhase("upload");
-            setTargetSpeed(0);
-            setCurrentSpeed(0);
-
-            const UPLOAD_TEST_DURATION = 14000; // 14 seconds
-            const uploadStartTime = performance.now();
-
-            let uploadSpeedMbps = 0;
-            let uploadTestComplete = false;
-
-            // Start actual upload test in the background
-            const performUploadTest = async () => {
-                try {
-                    // Create smaller blob for upload test
-                    const size = 1 * 1024 * 1024; // 1MB
-                    const randomData = new Uint8Array(size);
-                    for (let i = 0; i < size; i++) {
-                        randomData[i] = Math.floor(Math.random() * 256);
-                    }
-                    const blob = new Blob([randomData]);
-
-                    // Do an initial small upload to get a preliminary speed estimate
-                    try {
-                        const smallSize = 50 * 1024; // 50KB for quick test
-                        const smallData = new Uint8Array(smallSize);
-                        const smallBlob = new Blob([smallData]);
-
-                        const formData = new FormData();
-                        formData.append("file", smallBlob, "sample.bin");
-
-                        const sampleStart = performance.now();
-                        const response = await fetch(
-                            "https://httpbin.org/post",
-                            {
-                                method: "POST",
-                                body: formData,
-                            }
-                        );
-
-                        if (response.ok) {
-                            const sampleEnd = performance.now();
-                            const sampleTime = sampleEnd - sampleStart;
-
-                            if (sampleTime > 0) {
-                                // Calculate preliminary upload speed to guide animation
-                                const sampleSpeedBps =
-                                    (smallSize * 8) / (sampleTime / 1000);
-                                uploadSpeedMbps =
-                                    sampleSpeedBps / (1024 * 1024);
-                            }
-                        }
-                    } catch (error) {
-                        console.error("Sample upload test error:", error);
-                    }
-
-                    const formData = new FormData();
-                    formData.append("file", blob, "speedtest.bin");
-
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(
-                        () => controller.abort(),
-                        10000
-                    );
-
-                    try {
-                        const start = performance.now();
-                        const response = await fetch(
-                            "https://httpbin.org/post",
-                            {
-                                method: "POST",
-                                body: formData,
-                                signal: controller.signal,
-                            }
-                        );
-
-                        if (!response.ok) {
-                            throw new Error(
-                                `HTTP error! status: ${response.status}`
-                            );
-                        }
-
-                        const end = performance.now();
-                        const uploadTime = end - start;
-
-                        if (uploadTime > 0) {
-                            const uploadSpeedBps =
-                                (size * 8) / (uploadTime / 1000);
-                            uploadSpeedMbps = uploadSpeedBps / (1024 * 1024);
-                        } else {
-                            uploadSpeedMbps = 3 + Math.random() * 3; // More realistic fallback
-                        }
-                    } finally {
-                        clearTimeout(timeoutId);
-                    }
-                } catch (error) {
-                    console.error("Upload test error:", error);
-                    uploadSpeedMbps = 3 + Math.random() * 3; // More conservative estimate
-                }
-
-                uploadTestComplete = true;
-            };
-
-            // Start the actual upload test
-            performUploadTest();
-
-            // Setup the visual animation for exactly 14 seconds
-            const uploadAnimation = async () => {
-                // These will be dynamically adjusted based on measured speed
-                let stages = [
-                    { duration: 3000, max: 0, oscillation: 0.8 }, // Initial ramp up
-                    { duration: 4000, max: 0, oscillation: 1.2 }, // Mid range speeds
-                    { duration: 5000, max: 0, oscillation: 1.5 }, // High speeds
-                    { duration: 2000, max: 0, oscillation: 0.8 }, // Final adjustment
-                ];
-
-                // Default starting values that will be adjusted based on measurements
-                let baseMaxSpeed = 8; // Upload typically slower than download
-                let lastMeasuredSpeed = 0;
-
-                let currentStage = 0;
-                let stageStartTime = performance.now();
-                let simulatedSpeed = 0;
-
-                const uploadInterval = setInterval(() => {
-                    const now = performance.now();
-                    const elapsed = now - uploadStartTime;
-
-                    // Update speed estimation based on real measurements
-                    if (
-                        uploadSpeedMbps > 0 &&
-                        uploadSpeedMbps !== lastMeasuredSpeed
-                    ) {
-                        lastMeasuredSpeed = uploadSpeedMbps;
-
-                        // Calculate a realistic max speed for animation
-                        baseMaxSpeed = Math.min(
-                            Math.max(uploadSpeedMbps * 1.3, 5),
-                            40
-                        );
-
-                        // Adjust all stages based on the measured speed
-                        stages = stages.map((stage, index) => {
-                            const stageMultiplier = [0.4, 0.7, 1.0, 0.9][index];
-                            return {
-                                ...stage,
-                                max: baseMaxSpeed * stageMultiplier,
-                            };
-                        });
-                    }
-
-                    // Check if we should move to the next stage
-                    if (now - stageStartTime > stages[currentStage].duration) {
-                        if (currentStage < stages.length - 1) {
-                            currentStage++;
-                            stageStartTime = now;
-                        }
-                    }
-
-                    // Calculate simulated speed based on current stage
-                    const stage = stages[currentStage];
-                    const stageProgress = Math.min(
-                        1,
-                        (now - stageStartTime) / stage.duration
-                    );
-
-                    // In last stage, gradually converge to the real measured speed if available
-                    if (
-                        currentStage === stages.length - 1 &&
-                        uploadSpeedMbps > 0
-                    ) {
-                        // More aggressively converge to actual speed in final stage
-                        simulatedSpeed =
-                            simulatedSpeed +
-                            (uploadSpeedMbps - simulatedSpeed) * 0.2;
-                    } else {
-                        // Add randomness for realism
-                        simulatedSpeed +=
-                            Math.random() * stage.oscillation -
-                            stage.oscillation / 2;
-
-                        // Ensure speed stays within stage limits with progressive increase
-                        const targetForStage = stageProgress * stage.max;
-                        if (simulatedSpeed < targetForStage - 5)
-                            simulatedSpeed += 1;
-                        if (simulatedSpeed > targetForStage + 5)
-                            simulatedSpeed -= 0.5;
-                    }
-
-                    // Clamp values to be realistic
-                    if (simulatedSpeed > stage.max) simulatedSpeed = stage.max;
-                    if (simulatedSpeed < 0) simulatedSpeed = 0;
-
-                    setTargetSpeed(simulatedSpeed);
-
-                    // Check if test duration is complete
-                    if (elapsed >= UPLOAD_TEST_DURATION) {
-                        clearInterval(uploadInterval);
-
-                        // Use the real result if available, otherwise use the simulated one
-                        if (uploadTestComplete) {
-                            setUpload(uploadSpeedMbps.toFixed(2));
-                            setTargetSpeed(uploadSpeedMbps);
-                        } else {
-                            // Use the last simulated value as it should be close to real by now
-                            setUpload(simulatedSpeed.toFixed(2));
-                            setTargetSpeed(simulatedSpeed);
-                        }
-
-                        // Continue to IP location check
-                        getIPInformation();
-                    }
-                }, 200);
-            };
-
-            // Start the upload animation
-            uploadAnimation();
-        };
-
-        // Function to get IP and location information (will be called after upload completes)
-        const getIPInformation = async () => {
-            try {
-                const res = await fetch(
-                    `https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey}`
-                );
-                const data = await res.json();
-                setIP(data.ip);
-                setLocation(data.city);
-                setServer(data.isp);
-                setCountry(data.country_name);
-            } catch (e) {
-                console.error("IP geolocation error:", e);
-                try {
-                    const res = await fetch("https://ipapi.co/json/");
-                    const data = await res.json();
-                    setIP(data.ip);
-                    setLocation(data.city);
-                    setServer(data.org);
-                    setCountry(data.country_name);
-                } catch (fallbackError) {
-                    console.error("Fallback IP service error:", fallbackError);
-                    setIP("Unknown");
-                    setLocation("Unknown");
-                    setServer("Unknown");
-                    setCountry("Unknown");
-                }
-            } finally {
-                setIsTesting(false);
-                setTestPhase(null);
-                setShowServerSection(true);
-            }
-        };
+        if (uploadValues.length > 0) {
+            const weights = [2, 1, 1];
+            let weightSum = 0;
+            let weightedSum = 0;
+
+            uploadValues.forEach((val, idx) => {
+                const weight = weights[idx] || 1;
+                weightedSum += val * weight;
+                weightSum += weight;
+            });
+
+            const avgUpload = weightSum > 0 ? weightedSum / weightSum : 0;
+            setAverages(prev => ({ ...prev, upload: avgUpload.toFixed(2) }));
+        }
+
+        if (pingValues.length > 0) {
+            // For ping, method 1 is usually most accurate
+            const weights = [3, 1, 1];
+            let weightSum = 0;
+            let weightedSum = 0;
+
+            pingValues.forEach((val, idx) => {
+                const weight = weights[idx] || 1;
+                weightedSum += val * weight;
+                weightSum += weight;
+            });
+
+            const avgPing = weightSum > 0 ? weightedSum / weightSum : 0;
+            setAverages(prev => ({ ...prev, ping: avgPing.toFixed(2) }));
+        }
+    };
+
+    // Run all tests in sequence
+    const runSpeedTest = async () => {
+        setIsLoading(true);
+        setErrorMessage("");
+        setDownloadSpeed({ method1: null, method2: null, method3: null });
+        setUploadSpeed({ method1: null, method2: null, method3: null });
+        setPing({ method1: null, method2: null, method3: null });
+        setAverages({ download: null, upload: null, ping: null });
+
+        try {
+            // Run methods in parallel for faster results
+            await Promise.all([
+                measureSpeedMethod1(),
+                measureSpeedMethod2(),
+                measureSpeedMethod3()
+            ]);
+            calculateAverages();
+        } catch (error) {
+            console.error("Speed test error:", error);
+            setErrorMessage("Failed to complete speed test. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
-        const dpr = window.devicePixelRatio || 1;
-
-        const updateCanvasSize = () => {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            ctx.scale(dpr, dpr);
-        };
-
-        updateCanvasSize();
-        window.addEventListener("resize", updateCanvasSize);
-
-        const animateGauge = () => {
-            if (Math.abs(currentSpeed - targetSpeed) > 0.1) {
-                setCurrentSpeed((prev) => prev + (targetSpeed - prev) * 0.1);
-            } else {
-                setCurrentSpeed(targetSpeed);
-            }
-
-            drawSpeedGauge();
-            animationRef.current = requestAnimationFrame(animateGauge);
-        };
-
-        const drawSpeedGauge = () => {
-            const width = canvas.width / dpr;
-            const height = canvas.height / dpr;
-            const centerX = width / 2;
-            const centerY = height / 2;
-            const radius = Math.min(width, height) * 0.4;
-
-            ctx.clearRect(0, 0, width, height);
-
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-            ctx.fillStyle = "#f8f9fa";
-            ctx.fill();
-            ctx.strokeStyle = "#dee2e6";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            const startAngle = Math.PI * 0.75;
-            const endAngle = Math.PI * 2.25;
-            const totalAngle = endAngle - startAngle;
-
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius * 0.85, startAngle, endAngle);
-            ctx.lineWidth = radius * 0.1;
-            ctx.strokeStyle = "#e9ecef";
-            ctx.lineCap = "butt";
-            ctx.stroke();
-
-            let fillAngle;
-            if (currentSpeed <= 100) {
-                fillAngle =
-                    startAngle + totalAngle * (currentSpeed / 100) * 0.5;
-            } else {
-                fillAngle =
-                    startAngle +
-                    totalAngle * 0.5 +
-                    totalAngle *
-                        ((Math.min(currentSpeed, 1000) - 100) / 900) *
-                        0.5;
-            }
-
-            if (currentSpeed > 0) {
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius * 0.85, startAngle, fillAngle);
-                ctx.lineWidth = radius * 0.1;
-                ctx.strokeStyle = "#51cf66";
-                ctx.lineCap = "butt";
-                ctx.stroke();
-            }
-
-            for (let i = 0; i <= 20; i++) {
-                let value;
-                let position;
-
-                if (i <= 10) {
-                    value = i * 10;
-                    position = i / 20;
-                } else {
-                    value = 100 + (i - 10) * 90;
-                    position = 0.5 + (i - 10) / 20;
-                }
-
-                const angle = startAngle + totalAngle * position;
-
-                if (i % 2 === 0 || i === 10) {
-                    const textX = centerX + Math.cos(angle) * (radius * 0.65);
-                    const textY = centerY + Math.sin(angle) * (radius * 0.65);
-
-                    ctx.font = `${radius * 0.13}px Arial`;
-                    ctx.fillStyle = "#495057";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText(value.toString(), textX, textY);
-                }
-            }
-
-            let needlePosition;
-            if (currentSpeed <= 100) {
-                needlePosition = (currentSpeed / 100) * 0.5;
-            } else {
-                needlePosition =
-                    0.5 + ((Math.min(currentSpeed, 1000) - 100) / 900) * 0.5;
-            }
-
-            const needleAngle = startAngle + totalAngle * needlePosition;
-
-            ctx.beginPath();
-            ctx.moveTo(
-                centerX + Math.cos(needleAngle - Math.PI) * (radius * 0.1),
-                centerY + Math.sin(needleAngle - Math.PI) * (radius * 0.1)
-            );
-            ctx.lineTo(
-                centerX + Math.cos(needleAngle) * (radius * 0.8),
-                centerY + Math.sin(needleAngle) * (radius * 0.8)
-            );
-            ctx.strokeStyle = "#fa5252";
-            ctx.lineWidth = radius * 0.04;
-            ctx.lineCap = "round";
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius * 0.12, 0, Math.PI * 2);
-            ctx.fillStyle = "#fa5252";
-            ctx.fill();
-            ctx.strokeStyle = "#e03131";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            ctx.font = `bold ${radius * 0.25}px Arial`;
-            ctx.fillStyle = "#212529";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(
-                `${Math.round(currentSpeed * 10) / 10}`,
-                centerX,
-                centerY + radius * 0.3
-            );
-
-            // نمایش واحد (Mbps)
-            ctx.font = `${radius * 0.15}px Arial`;
-            ctx.fillStyle = "#495057";
-            ctx.fillText("Mbps", centerX, centerY + radius * 0.5);
-        };
-
-        // شروع انیمیشن
-        animationRef.current = requestAnimationFrame(animateGauge);
-
-        // پاک‌سازی
-        return () => {
-            window.removeEventListener("resize", updateCanvasSize);
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
-            }
-        };
-    }, [currentSpeed, targetSpeed, testPhase]);
+        if (Object.values(downloadSpeed).some(val => val !== null) ||
+            Object.values(uploadSpeed).some(val => val !== null) ||
+            Object.values(ping).some(val => val !== null)) {
+            calculateAverages();
+        }
+    }, [downloadSpeed, uploadSpeed, ping]);
 
     return (
-        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
-            <Head title={t("network_test.title")} />
+        <AppLayoutSwitcher
+            auth={auth}
+            headerData={headerData}
+            footerData={footerData}
+        >
+            <Head title={"Network Test"} />
 
-            <div className={`flex flex-col items-center justify-start text-center mb-10`}>
-                <div className="w-full bg-gray-50">
-                    <h1 className="text-3xl font-bold mb-14 mt-[120px] px-4">
-                        {t("network_test.title")}
-                    </h1>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+                <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+                    <h1 className="text-2xl font-bold mb-6">Network Speed Test</h1>
 
-                    {/* Add CSS for smooth animations */}
-                    <style jsx>{`
-                        .test-section {
-                            opacity: 0;
-                            max-height: 0;
-                            overflow: hidden;
-                            transition: opacity 0.5s ease, max-height 0.5s ease;
-                        }
-                        .test-section.visible {
-                            opacity: 1;
-                            max-height: 1000px;
-                        }
-                    `}</style>
+                    <button
+                        onClick={runSpeedTest}
+                        disabled={isLoading}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
+                    >
+                        {isLoading ? "Testing..." : "Start Speed Test"}
+                    </button>
 
-                    {!showTestInterface && (
-                        <button
-                            onClick={measureNetwork}
-                            disabled={isTesting}
-                            className="my-6 px-8 py-3 primary text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
-                        >
-                            {t("network_test.start_test")}
-                        </button>
+                    {errorMessage && (
+                        <div className="mt-4 text-red-600">{errorMessage}</div>
                     )}
 
-                    <div
-                        className={`w-full px-4 space-y-8 test-section ${
-                            showTestInterface ? "visible" : ""
-                        }`}
-                    >
-                        {/* Performance section  */}
-                        <table className="w-[60%] mx-auto border-collapse">
-                            <thead>
-                                <tr className="border-y border-gray-200">
-                                    <th className="text-lg font-semibold py-2 w-[33.3%]">
-                                        {t("network_test.ping")}
-                                    </th>
-                                    <th className="text-lg font-semibold py-2 w-[33.3%]">
-                                        {t("network_test.download")}
-                                    </th>
-                                    <th className="text-lg font-semibold py-2 w-[33.3%]">
-                                        {t("network_test.upload")}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td
-                                        className={`text-lg relative font-semibold py-2 ${
-                                            testPhase === "ping"
-                                                ? "text-green-500"
-                                                : "text-gray-700"
-                                        }`}
-                                    >
-                                        {testPhase === "ping" && !ping && (
-                                            <div className="middle mt-5">
-                                                <div className="bar bar1"></div>
-                                                <div className="bar bar2"></div>
-                                                <div className="bar bar3"></div>
-                                                <div className="bar bar4"></div>
-                                                <div className="bar bar5"></div>
-                                                <div className="bar bar6"></div>
-                                                <div className="bar bar7"></div>
-                                                <div className="bar bar8"></div>
-                                            </div>
-                                        )}
-                                        {ping ? `${ping} ms` : ""}
-                                    </td>
-                                    <td
-                                        className={`text-lg relative font-semibold py-2 ${
-                                            testPhase === "download"
-                                                ? "text-green-500"
-                                                : "text-gray-700"
-                                        }`}
-                                    >
-                                        {testPhase === "download" &&
-                                            !download && (
-                                                <div className="middle pt-3">
-                                                    <div className="bar bar1"></div>
-                                                    <div className="bar bar2"></div>
-                                                    <div className="bar bar3"></div>
-                                                    <div className="bar bar4"></div>
-                                                    <div className="bar bar5"></div>
-                                                    <div className="bar bar6"></div>
-                                                    <div className="bar bar7"></div>
-                                                    <div className="bar bar8"></div>
-                                                </div>
-                                            )}
-                                        {download ? `${download} Mbps` : ""}
-                                    </td>
-                                    <td
-                                        className={`text-lg relative font-semibold py-2 ${
-                                            testPhase === "upload"
-                                                ? "text-green-500"
-                                                : "text-gray-700"
-                                        }`}
-                                    >
-                                        {testPhase === "upload" && !upload && (
-                                            <div className="middle pt-3">
-                                                <div className="bar bar1"></div>
-                                                <div className="bar bar2"></div>
-                                                <div className="bar bar3"></div>
-                                                <div className="bar bar4"></div>
-                                                <div className="bar bar5"></div>
-                                                <div className="bar bar6"></div>
-                                                <div className="bar bar7"></div>
-                                                <div className="bar bar8"></div>
-                                            </div>
-                                        )}
-                                        {upload ? `${upload} Mbps` : ""}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div className="mt-8">
+                        <h2 className="text-xl font-semibold mb-4">Results</h2>
 
-                        {/* Canvas section - hidden when test is completed */}
-                        <div
-                            className={`relative mb-6 w-full max-w-md mx-auto ${
-                                !isTesting && ping && download && upload
-                                    ? "hidden"
-                                    : ""
-                            }`}
-                        >
-                            <canvas
-                                ref={canvasRef}
-                                className="w-full aspect-square"
-                            />
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-medium">Download Speed</h3>
+                                <div className="grid grid-cols-3 gap-4 mt-2">
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 1</p>
+                                        <p className="text-lg font-medium">{downloadSpeed.method1 ? `${downloadSpeed.method1} Mbps` : '-'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 2</p>
+                                        <p className="text-lg font-medium">{downloadSpeed.method2 ? `${downloadSpeed.method2} Mbps` : '-'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 3</p>
+                                        <p className="text-lg font-medium">{downloadSpeed.method3 ? `${downloadSpeed.method3} Mbps` : '-'}</p>
+                                    </div>
+                                </div>
+                                <div className="mt-2 font-bold">
+                                    Average: {averages.download ? `${averages.download} Mbps` : '-'}
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-medium">Upload Speed</h3>
+                                <div className="grid grid-cols-3 gap-4 mt-2">
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 1</p>
+                                        <p className="text-lg font-medium">{uploadSpeed.method1 ? `${uploadSpeed.method1} Mbps` : '-'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 2</p>
+                                        <p className="text-lg font-medium">{uploadSpeed.method2 ? `${uploadSpeed.method2} Mbps` : '-'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 3</p>
+                                        <p className="text-lg font-medium">{uploadSpeed.method3 ? `${uploadSpeed.method3} Mbps` : '-'}</p>
+                                    </div>
+                                </div>
+                                <div className="mt-2 font-bold">
+                                    Average: {averages.upload ? `${averages.upload} Mbps` : '-'}
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-medium">Ping</h3>
+                                <div className="grid grid-cols-3 gap-4 mt-2">
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 1</p>
+                                        <p className="text-lg font-medium">{ping.method1 ? `${ping.method1} ms` : '-'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 2</p>
+                                        <p className="text-lg font-medium">{ping.method2 ? `${ping.method2} ms` : '-'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded">
+                                        <p className="text-sm text-gray-600">Method 3</p>
+                                        <p className="text-lg font-medium">{ping.method3 ? `${ping.method3} ms` : '-'}</p>
+                                    </div>
+                                </div>
+                                <div className="mt-2 font-bold">
+                                    Average: {averages.ping ? `${averages.ping} ms` : '-'}
+                                </div>
+                            </div>
                         </div>
-
-                        {/* Server section  */}
-                        <table
-                            className={`w-[60%] mx-auto border-collapse ${
-                                showServerSection ? "" : "hidden"
-                            }`}
-                        >
-                            <thead>
-                                <tr className="border-y border-gray-200">
-                                    <th className="text-lg font-semibold py-2 w-[33.3%]">
-                                        {t("network_test.ip")}
-                                    </th>
-                                    <th className="text-lg font-semibold py-2 w-[33.3%]">
-                                        {t("network_test.location")}
-                                    </th>
-                                    <th className="text-lg font-semibold py-2 w-[33.3%]">
-                                        {t("network_test.server")}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td
-                                        className={`text-lg font-semibold py-2 ${
-                                            testPhase === "ip"
-                                                ? "text-green-500"
-                                                : "text-gray-700"
-                                        }`}
-                                    >
-                                        {ip || "..."}
-                                    </td>
-                                    <td
-                                        className={`text-lg font-semibold py-2 ${
-                                            testPhase === "download"
-                                                ? "text-green-500"
-                                                : "text-gray-700"
-                                        }`}
-                                    >
-                                        {location || "..."}
-                                    </td>
-                                    <td
-                                        className={`text-lg font-semibold py-2 ${
-                                            testPhase === "upload"
-                                                ? "text-green-500"
-                                                : "text-gray-700"
-                                        }`}
-                                    >
-                                        {server || "..."}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
-
-                    {showTestInterface && (
-                        <button
-                            onClick={measureNetwork}
-                            disabled={isTesting}
-                            className="my-6 px-8 py-3 mx-4 primary text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
-                        >
-                            {isTesting ? t("network_test.testing") : t("network_test.test_again")}
-                        </button>
-                    )}
-                </div>
-                {/* description  */}
-                <div className={`${lang === "en" ? "text-left" : "text-right"} p-6 bg-gray-50 py-10 w-full`}>
-                    <h2 className="text-xl font-bold mb-4 text-primary">
-                        {t("network_test.about_title")}
-                    </h2>
-                    <p className="mb-4">
-                        {t("network_test.description_long")}
-                    </p>
-                    <div className="mb-4">
-                        <h3 className="text-lg font-bold inline-block ml-2">
-                            {t("network_test.guide_title")}:
-                        </h3>
-                        <span>
-                            {t("network_test.guide_description")}
-                        </span>
-                    </div>
-                    <ul className="list-disc px-5 space-y-2 text-gray-800">
-                        <li>{t("network_test.guide_item1")}</li>
-                        <li>{t("network_test.guide_item2")}</li>
-                        <li>{t("network_test.guide_item3")}</li>
-                        <li>{t("network_test.guide_item4")}</li>
-                        <li>{t("network_test.guide_item5")}</li>
-                    </ul>
-                    <p className="mt-6 text-gray-800 font-bold">
-                        {t("network_test.support_message")}
-                    </p>
-                </div>
-                {/* <!-- curved-div --> */}
-                <div className="rotate-180 w-full">
-                    <svg
-                        class="packages_svg"
-                        xmlns="http://www.w3.org/2000/svg"
-                        version="1.1"
-                        xmlns:xlink="http://www.w3.org/1999/xlink"
-                        xmlns:svgjs="http://svgjs.com/svgjs"
-                        width="100%"
-                        height="100"
-                        preserveAspectRatio="none"
-                        viewBox="0 0 1440 100"
-                    >
-                        <g mask='url("#SvgjsMask1071")' fill="none">
-                            <path
-                                d="M 0,40 C 96,50 288,90.2 480,90 C 672,89.8 768,43 960,39 C 1152,35 1344,63.8 1440,70L1440 100L0 100z"
-                                fill="#f7f9fc"
-                            ></path>
-                        </g>
-                        <defs>
-                            <mask id="SvgjsMask1071">
-                                <rect
-                                    width="1440"
-                                    height="100"
-                                    fill="#ffffff"
-                                ></rect>
-                            </mask>
-                        </defs>
-                    </svg>
                 </div>
             </div>
         </AppLayoutSwitcher>

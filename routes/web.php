@@ -9,6 +9,7 @@ use App\Http\Controllers\InternetPackageWebController;
 use App\Http\Controllers\InternetRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiteItemController;
+use App\Http\Controllers\SpeedTestController;
 use App\Models\Circle;
 use App\Models\CircleItem;
 use App\Models\InternetPackage;
@@ -30,6 +31,8 @@ use Inertia\Inertia;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::get('/run-speedtest', [SpeedTestController::class, 'run']);
 
 Route::middleware(['log.visit'])->group(function () {
     Route::get('/', function () {

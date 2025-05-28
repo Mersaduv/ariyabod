@@ -1,14 +1,18 @@
 import { Link, Head } from "@inertiajs/react";
 import AppLayoutSwitcher from "../Layouts/AppLayoutSwitcher";
 import { useTranslation } from "react-i18next";
-import React, { useState, useEffect, useMemo } from "react";
-import AOS from "aos";
+import React, {
+    useState,
+    useEffect,
+    useMemo,
+    lazy,
+    memo,
+    useCallback,
+} from "react";
 import { FaCheck } from "react-icons/fa6";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 import "aos/dist/aos.css";
 import { GrMapLocation } from "react-icons/gr";
-import { Button } from "@/Components/ui/Buttons";
 
 const formatSpeed = (speedMb, t, lang) => {
     if (!speedMb && speedMb !== 0) return "";
@@ -25,10 +29,100 @@ const formatSpeed = (speedMb, t, lang) => {
         : `${t("internet_packages.mb_speed")} ${speedMb}`;
 };
 
-export default function WelcomeV2({
+// Lazy load heavy components
+const AOS = lazy(() => import("aos"));
+
+// Memoized components for better performance
+const SliderDots = memo(({ sliderItems, currentSlide, onSlideChange }) => (
+    <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex gap-2">
+        {sliderItems.map((_, index) => (
+            <button
+                key={index}
+                onClick={() => onSlideChange(index)}
+                className={`h-2.5 rounded-full ${
+                    currentSlide === index
+                        ? "w-8 bg-white"
+                        : "w-2.5 bg-white bg-opacity-50"
+                } transition-all duration-300`}
+                aria-label={`Go to slide ${index + 1}`}
+            />
+        ))}
+    </div>
+));
+
+const ServiceItem = memo(({ item, index, lang }) => (
+    <div
+        className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-all border border-gray-100"
+        data-aos="fade-up"
+        data-aos-delay={index * 100}
+    >
+        <div className="flex justify-center mb-6">
+            <img
+                src={item.image}
+                alt={item.title[lang]}
+                className="w-20 h-20 object-contain"
+                loading="lazy"
+                decoding="async"
+            />
+        </div>
+        <h3 className="text-xl font-semibold text-center mb-3">
+            {item.title[lang]}
+        </h3>
+        <p className="text-gray-600 text-center">{item.description[lang]}</p>
+    </div>
+));
+
+const SliderSlide = memo(({ slide, lang, isActive }) => (
+    <div
+        className={`slider-slide w-full flex-shrink-0 flex ${
+            lang !== "en" ? "justify-start" : "justify-end"
+        }`}
+    >
+        <div className="flex flex-col-reverse items-start gap-4">
+            <div className="mb-10 md:mb-0 text-white" data-aos="fade-right">
+                <h1 className="text-2xl font-bold mb-2 max-w-lg">
+                    {slide.title?.[lang] || ""}
+                </h1>
+                <p className="mb-8 max-w-lg">
+                    {slide.description?.[lang] || ""}
+                </p>
+                <div
+                    className={`mb-6 ${
+                        lang !== "en" ? "text-left" : "text-right"
+                    }`}
+                >
+                    {slide.link && (
+                        <Link
+                            href={slide.link}
+                            className="bg-white text-[#428b7c] px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition"
+                        >
+                            {slide.button_text?.[lang] || "Learn More"}
+                        </Link>
+                    )}
+                </div>
+            </div>
+            <div
+                className={`${
+                    lang !== "en" ? "" : "w-full flex justify-start"
+                }`}
+                data-aos="fade-left"
+            >
+                {slide.image && (
+                    <img
+                        src={slide.image}
+                        alt={slide.title?.[lang] || "Slider Image"}
+                        className="w-full max-w-lg rounded-lg"
+                        loading={isActive ? "eager" : "lazy"}
+                        decoding="async"
+                    />
+                )}
+            </div>
+        </div>
+    </div>
+));
+
+export default memo(function WelcomeV2({
     auth,
-    laravelVersion,
-    phpVersion,
     footerData,
     circleItems,
     servicesItems,
@@ -38,20 +132,27 @@ export default function WelcomeV2({
     sliderBackground = "",
 }) {
     const { t } = useTranslation();
-    const [lang, setLang] = useState("fa");
+    const [lang, setLang] = useState(() =>
+        typeof window !== "undefined"
+            ? localStorage.getItem("lang") || "fa"
+            : "fa"
+    );
     const [activeTab, setActiveTab] = useState(0);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [aosLoaded, setAosLoaded] = useState(false);
 
-    useEffect(() => {
-        const storedLang = localStorage.getItem("lang") || "fa";
-        setLang(storedLang);
-    }, []);
-
-    const tabTypes = [
-        { key: "volume_fixed", title: t("internet_packages.volume_fixed") },
-        { key: "volume_daily", title: t("internet_packages.volume_daily") },
-        { key: "unlimited_home", title: t("internet_packages.unlimited_home") },
-    ];
+    // Memoized values
+    const tabTypes = useMemo(
+        () => [
+            { key: "volume_fixed", title: t("internet_packages.volume_fixed") },
+            { key: "volume_daily", title: t("internet_packages.volume_daily") },
+            {
+                key: "unlimited_home",
+                title: t("internet_packages.unlimited_home"),
+            },
+        ],
+        [t]
+    );
 
     const filteredPackages = useMemo(() => {
         const type = tabTypes[activeTab]?.key;
@@ -59,17 +160,68 @@ export default function WelcomeV2({
             return internetPackages.filter((pkg) => pkg.type === "unlimited");
         }
         return internetPackages.filter((pkg) => pkg.type === type);
-    }, [activeTab, internetPackages]);
+    }, [activeTab, internetPackages, tabTypes]);
+
+    const sliderStyle = useMemo(
+        () => ({
+            background: sliderBackground
+                ? `url(${sliderBackground}) center/cover no-repeat`
+                : "linear-gradient(to right, #428b7c, #97c3b9)",
+            objectFit: "contain",
+        }),
+        [sliderBackground]
+    );
+
+    const sliderTransform = useMemo(
+        () => ({
+            transform:
+                lang === "en"
+                    ? `translateX(-${currentSlide * 100}%)`
+                    : `translateX(${currentSlide * 100}%)`,
+        }),
+        [lang, currentSlide]
+    );
+
+    // Callbacks
+    const handleSlideChange = useCallback((index) => {
+        setCurrentSlide(index);
+    }, []);
+
+    // Effects
+    useEffect(() => {
+        const storedLang = localStorage.getItem("lang") || "fa";
+        setLang(storedLang);
+    }, [localStorage.getItem("lang")]);
 
     useEffect(() => {
-        if (window.innerWidth > 768) {
-            AOS.init({ duration: 1000, once: false });
+        if (
+            typeof window !== "undefined" &&
+            window.innerWidth > 768 &&
+            !aosLoaded
+        ) {
+            import("aos").then((AOS) => {
+                AOS.default.init({ duration: 1000, once: true });
+                setAosLoaded(true);
+            });
         }
+    }, [aosLoaded]);
+
+    // Refresh AOS animations when language changes
+    useEffect(() => {
+        if (aosLoaded && typeof window !== "undefined") {
+            import("aos").then((AOS) => {
+                AOS.default.refresh();
+            });
+        }
+    }, [lang, aosLoaded]);
+
+    useEffect(() => {
+        if (sliderItems.length <= 1) return;
+
         const interval = setInterval(() => {
-            if (sliderItems.length > 0) {
-                setCurrentSlide((prev) => (prev + 1) % sliderItems.length);
-            }
+            setCurrentSlide((prev) => (prev + 1) % sliderItems.length);
         }, 5000);
+
         return () => clearInterval(interval);
     }, [sliderItems.length]);
 
@@ -85,101 +237,22 @@ export default function WelcomeV2({
                 {/* Slider Section */}
                 <div
                     className="relative overflow-hidden -mt-4 md1:mt-0"
-                    style={{
-                        background: sliderBackground
-                            ? `url(${sliderBackground}) center/cover no-repeat`
-                            : "linear-gradient(to right, #428b7c, #97c3b9)",
-                        objectFit: "contain",
-                    }}
+                    style={sliderStyle}
                 >
                     <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 lg:py-24 lg:pt-16 relative z-10">
                         <div className="slider-container overflow-hidden relative">
                             <div
                                 className="slider-wrapper flex transition-transform duration-500 ease-in-out"
-                                style={{
-                                    transform:
-                                        lang === "en"
-                                            ? `translateX(-${
-                                                  currentSlide * 100
-                                              }%)`
-                                            : `translateX(${
-                                                  currentSlide * 100
-                                              }%)`,
-                                }}
+                                style={sliderTransform}
                             >
                                 {sliderItems.length > 0 ? (
                                     sliderItems.map((slide, index) => (
-                                        <div
-                                            key={index}
-                                            className={`slider-slide w-full flex-shrink-0 flex ${
-                                                lang !== "en"
-                                                    ? "justify-start"
-                                                    : "justify-end"
-                                            }`}
-                                        >
-                                            <div className="flex flex-col-reverse items-start gap-4">
-                                                <div
-                                                    className="mb-10 md:mb-0 text-white"
-                                                    data-aos="fade-right"
-                                                >
-                                                    <h1 className="text-2xl font-bold mb-2 max-w-lg">
-                                                        {slide.title?.[lang] ||
-                                                            ""}
-                                                    </h1>
-                                                    <p className="mb-8 max-w-lg">
-                                                        {slide.description?.[
-                                                            lang
-                                                        ] || ""}
-                                                    </p>
-                                                    <div
-                                                        className={`mb-6 ${
-                                                            lang !== "en"
-                                                                ? "text-left"
-                                                                : "text-right"
-                                                        }`}
-                                                    >
-                                                        {slide.link && (
-                                                            <Link
-                                                                href={
-                                                                    slide.link
-                                                                }
-                                                                className="bg-white text-[#428b7c] px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition"
-                                                            >
-                                                                {slide
-                                                                    .button_text?.[
-                                                                    lang
-                                                                ] ||
-                                                                    t(
-                                                                        "slider.learn_more"
-                                                                    )}
-                                                            </Link>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    className={`${
-                                                        lang !== "en"
-                                                            ? ""
-                                                            : "w-full flex justify-start"
-                                                    }`}
-                                                    data-aos="fade-left"
-                                                >
-                                                    {slide.image && (
-                                                        <img
-                                                            src={slide.image}
-                                                            alt={
-                                                                slide.title?.[
-                                                                    lang
-                                                                ] ||
-                                                                "Slider Image"
-                                                            }
-                                                            className="w-full max-w-lg rounded-lg"
-                                                            loading="lazy"
-                                                        />
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <SliderSlide
+                                            key={slide.id || index}
+                                            slide={slide}
+                                            lang={lang}
+                                            isActive={currentSlide === index}
+                                        />
                                     ))
                                 ) : (
                                     <div className="slider-slide w-full flex-shrink-0">
@@ -221,7 +294,8 @@ export default function WelcomeV2({
                                                     src="/images/hero-illustration.svg"
                                                     alt="Internet Services"
                                                     className="w-full max-w-lg mx-auto"
-                                                    loading="lazy"
+                                                    loading="eager"
+                                                    decoding="async"
                                                 />
                                             </div>
                                         </div>
@@ -230,28 +304,16 @@ export default function WelcomeV2({
                             </div>
 
                             {sliderItems.length > 1 && (
-                                <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex gap-2">
-                                    {sliderItems.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() =>
-                                                setCurrentSlide(index)
-                                            }
-                                            className={`h-2.5 rounded-full ${
-                                                currentSlide === index
-                                                    ? "w-8 bg-white"
-                                                    : "w-2.5 bg-white bg-opacity-50"
-                                            } transition-all duration-300`}
-                                            aria-label={`Go to slide ${
-                                                index + 1
-                                            }`}
-                                        ></button>
-                                    ))}
-                                </div>
+                                <SliderDots
+                                    sliderItems={sliderItems}
+                                    currentSlide={currentSlide}
+                                    onSlideChange={handleSlideChange}
+                                />
                             )}
                         </div>
                     </div>
                 </div>
+
                 {/* Services Section */}
                 <div id="ServicesSection" className="py-16 bg-white">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -263,29 +325,14 @@ export default function WelcomeV2({
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {servicesItems &&
-                                servicesItems.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-all border border-gray-100"
-                                        data-aos="fade-up"
-                                        data-aos-delay={index * 100}
-                                    >
-                                        <div className="flex justify-center mb-6">
-                                            <img
-                                                src={item.image}
-                                                alt={item.title[lang]}
-                                                className="w-20 h-20 object-contain"
-                                            />
-                                        </div>
-                                        <h3 className="text-xl font-semibold text-center mb-3">
-                                            {item.title[lang]}
-                                        </h3>
-                                        <p className="text-gray-600 text-center">
-                                            {item.description[lang]}
-                                        </p>
-                                    </div>
-                                ))}
+                            {servicesItems?.map((item, index) => (
+                                <ServiceItem
+                                    key={item.id || index}
+                                    item={item}
+                                    index={index}
+                                    lang={lang}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -696,4 +743,4 @@ export default function WelcomeV2({
             </div>
         </AppLayoutSwitcher>
     );
-}
+});

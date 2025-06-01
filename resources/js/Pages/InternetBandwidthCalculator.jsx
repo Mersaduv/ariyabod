@@ -3,7 +3,7 @@ import { Head } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useEffect } from "react";
 
-export default function InternetBandwidthCalculator({ auth, headerData, footerData, speedOptions }) {
+export default function InternetBandwidthCalculator({ auth, headerData, footerData, speedOptions, servicesItems }) {
     const { t, i18n } = useTranslation();
     const lang = localStorage.getItem("lang") || "fa";
 
@@ -114,7 +114,7 @@ export default function InternetBandwidthCalculator({ auth, headerData, footerDa
     };
 
     return (
-        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData} servicesItems={servicesItems}>
             <Head title={t("calculator.bandwidth_calculator") || "محاسبه پهنای اینترنت"} />
 
             <div className="container mx-auto px-4 py-16 pt-24 text-center">

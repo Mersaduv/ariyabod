@@ -8,7 +8,7 @@ import { IoLocationSharp } from "react-icons/io5";
 import { BsFillTelephoneFill } from "react-icons/bs";
 import TextInput from "@/Components/TextInput";
 
-export default function ContactUs({ auth, headerData, footerData }) {
+export default function ContactUs({ auth, headerData, footerData, servicesItems }) {
     const { t, i18n } = useTranslation();
     const { flash } = usePage().props;
     const [showSuccess, setShowSuccess] = useState(false);
@@ -62,7 +62,7 @@ export default function ContactUs({ auth, headerData, footerData }) {
     };
 
     return (
-        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData} servicesItems={servicesItems}>
             <Head title={t("nav.contactUs")} />
 
             <div className="mb-10 pt-[60px]">

@@ -9,7 +9,7 @@ const PING_COUNT = 10;
 const DOWNLOAD_CONNECTIONS = 6;
 const UPLOAD_CONNECTIONS = 4;
 
-export default function NetworkTest({ auth, headerData, footerData }) {
+export default function NetworkTest({ auth, headerData, footerData, servicesItems }) {
     const { t } = useTranslation();
     const [ping, setPing] = useState(null);
     const [downloadSpeed, setDownloadSpeed] = useState(null);
@@ -369,6 +369,7 @@ export default function NetworkTest({ auth, headerData, footerData }) {
             auth={auth}
             headerData={headerData}
             footerData={footerData}
+            servicesItems={servicesItems}
         >
             <Head title="Speed Test" />
             <div className="w-full bg-gray-50">

@@ -5,7 +5,7 @@ import { usePage } from "@inertiajs/react";
 import AppLayoutSwitcher from "@/Layouts/AppLayoutSwitcher";
 import { toast } from "react-hot-toast";
 
-export default function RequestInternet({ auth, headerData, footerData }) {
+export default function RequestInternet({ auth, headerData, footerData, servicesItems }) {
     const { t } = useTranslation();
     const { flash } = usePage().props;
     const [showSuccess, setShowSuccess] = useState(false);
@@ -52,7 +52,7 @@ export default function RequestInternet({ auth, headerData, footerData }) {
     };
 
     return (
-        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData} servicesItems={servicesItems}>
             <Head title="درخواست انترنت" />
 
             <div className="mx-auto px-4 py-16 pt-24 text-center bg-gray-100 mb-10 large-rounded">

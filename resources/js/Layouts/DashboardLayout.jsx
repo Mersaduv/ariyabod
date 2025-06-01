@@ -67,7 +67,7 @@ export default function DashboardLayout({ children, auth = {} }) {
     return (
         <div className="min-h-screen flex flex-col">
             {/* header */}
-            <header className="shadow px-4 py-3 flex justify-between items-center">
+            <header className="shadow px-4 py-3 flex justify-between items-center sticky top-0 z-50 bg-white">
                 <div className="flex items-center gap-10">
                     <button
                         ref={menuButtonRef}
@@ -81,7 +81,7 @@ export default function DashboardLayout({ children, auth = {} }) {
                 </div>
                 <div className="font-bold">{formattedDate}</div>
             </header>
-            <div className="flex ">
+            <div className="flex">
                 <DashboardAdminAside setOpen={setMenuOpen} open={menuOpen} />
                 <main className="flex-1">{children}</main>
             </div>

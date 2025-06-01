@@ -69,6 +69,7 @@ const menuItems = [
 export default function DashboardAdminAside(props) {
     const { open, setOpen } = props;
     const { t, i18n } = useTranslation();
+    const lang = localStorage.getItem("lang") || "fa";
     const { url } = usePage();
     const currentPath = window.location.pathname;
     const [openSubMenu, setOpenSubMenu] = useState(null);
@@ -81,16 +82,18 @@ export default function DashboardAdminAside(props) {
         setOpenSubMenu(null);
     };
     return (
-        <>
+        // aside section
+        <div>
             <aside
-                className={`transition-all duration-300 mt-0.5 bg-white border-r shadow ${
+                className={`transition-all duration-300 mt-0.3 bg-white border-r shadow sticky top-[61px] ${lang === "fa" ? "left-0" : "right-0"} z-40 ${
                     open ? "w-64" : "w-20"
                 } min-h-screen sm:block hidden`}
             >
                 <div className="flex flex-col h-full py-6 pt-4 px-4 gap-4 relative">
                     {menuItems.map((item) => {
-                       const isActive = item.path?.some((path) => currentPath.startsWith(path));
-
+                        const isActive = item.path?.some((path) =>
+                            currentPath.startsWith(path)
+                        );
 
                         if (item.subItems) {
                             return (
@@ -307,6 +310,6 @@ export default function DashboardAdminAside(props) {
                     })}
                 </div>
             </aside>
-        </>
+        </div>
     );
 }

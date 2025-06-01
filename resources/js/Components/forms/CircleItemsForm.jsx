@@ -78,7 +78,10 @@ export default function CircleItemsForm({ circleItems = [], message }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         post(route("admin.site-items.store"), {
+            status: data.status ? 1 : 0,
+        }, {
             preserveScroll: true,
             headers: {
                 "X-Lang": localStorage.getItem("lang") || "fa",
@@ -104,7 +107,16 @@ export default function CircleItemsForm({ circleItems = [], message }) {
                         label={t("circle_items.is_enabled")}
                         name="status"
                         checked={data.status}
-                        onChange={(e) => setData("status", e.target.checked)}
+                        onChange={(e) => {
+                            const newStatus = e.target.checked;
+                            setData({
+                                status: newStatus,
+                                items: data.items.map(item => ({
+                                    ...item,
+                                    status: newStatus
+                                }))
+                            });
+                        }}
                     />
                 </div>
             </div>

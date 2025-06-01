@@ -266,6 +266,7 @@ export default function Welcome({
                                     >
                                         {circleItems &&
                                             circleItems
+                                                .filter((item) => item.status === 1)
                                                 .slice(1)
                                                 .sort(
                                                     (a, b) => a.order - b.order

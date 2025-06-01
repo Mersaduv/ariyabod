@@ -17,6 +17,7 @@ export default function SliderItemsForm({
     message,
 }) {
     const { t } = useTranslation();
+    const lang = localStorage.getItem("lang") || "fa";
 
     const {
         data,
@@ -97,10 +98,6 @@ export default function SliderItemsForm({
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Background Image Section */}
             <div className="bg-white rounded-lg shadow p-6">
-                <h1 className="text-2xl font-bold mb-6">
-                    {t("slider_items.title")}
-                </h1>
-
                 <div className="mb-8">
                     <h2 className="text-xl font-semibold mb-4">
                         {t("slider_items.background")}
@@ -138,21 +135,6 @@ export default function SliderItemsForm({
                     </span>
                 </div>
 
-                {/* Add Button Always Visible at Top */}
-                <div className="mb-6">
-                    <button
-                        type="button"
-                        onClick={addItem}
-                        className="inline-flex items-center px-4 py-2 border border-[#428b7c] text-[#428b7c] hover:bg-[#428b7c] hover:text-white transition-all duration-300 rounded-md"
-                        disabled={data.items.length >= 5}
-                    >
-                        <IoMdAdd className="mr-1" />
-                        {data.items.length === 0
-                            ? t("slider_items.add_first_slide")
-                            : t("slider_items.add_slide")}
-                    </button>
-                </div>
-
                 {data.items.length === 0 ? (
                     <div className="p-8 text-center border border-dashed border-gray-300 rounded-lg">
                         <p className="text-gray-500 mb-4">
@@ -166,14 +148,18 @@ export default function SliderItemsForm({
                                 key={index}
                                 className="border border-gray-200 rounded-lg p-6 relative"
                             >
-                                <div className="absolute top-3 left-3 flex items-center">
+                                <div
+                                    className={`absolute top-3 ${
+                                        lang === "en" ? "right-3" : "left-3"
+                                    } flex items-center`}
+                                >
                                     {data.items.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={() => removeItem(index)}
                                             className="text-red-500 hover:bg-red-50 rounded-md p-2 px-4 border border-red-500 text-sm"
                                         >
-                                            حذف
+                                            {t("slider_items.delete")}
                                         </button>
                                     )}
                                 </div>
@@ -505,18 +491,33 @@ export default function SliderItemsForm({
                         ))}
                     </div>
                 )}
-
-                {data.items.length > 0 && (
-                    <div className="flex justify-end mt-6">
-                        <Button
-                            type="submit"
-                            isLoading={processing}
-                            className="primary"
+                <div className="flex gap-2 items-center mt-6">
+                    {/* Add Button Always Visible at Top */}
+                    <div className="">
+                        <button
+                            type="button"
+                            onClick={addItem}
+                            className="inline-flex items-center px-4 py-3 border border-[#428b7c] text-[#428b7c] hover:bg-[#428b7c] hover:text-white transition-all duration-300 rounded-md"
+                            disabled={data.items.length >= 5}
                         >
-                            {t("slider_items.save_slides")}
-                        </Button>
+                            <IoMdAdd className="mr-1" />
+                            {data.items.length === 0
+                                ? t("slider_items.add_first_slide")
+                                : t("slider_items.add_slide")}
+                        </button>
                     </div>
-                )}
+                    {data.items.length > 0 && (
+                        <div className="flex justify-end">
+                            <Button
+                                type="submit"
+                                isLoading={processing}
+                                className="primary"
+                            >
+                                {t("slider_items.save_slides")}
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
         </form>
     );

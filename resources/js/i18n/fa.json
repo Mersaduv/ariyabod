@@ -134,6 +134,7 @@
     "add_social_media": "افزودن شبکه اجتماعی",
 
     "slider_items": {
+        "delete": "حذف",
         "title": "مدیریت اسلایدر",
         "management": "مدیریت اسلایدر",
         "management_description": "مدیریت اسلایدر صفحه اصلی. افزودن، ویرایش و حذف اسلایدها.",
@@ -530,7 +531,21 @@
             },
             "delete": "حذف",
             "no_users": "هیچ کاربری یافت نشد",
-            "no_activity": "هیچ فعالیتی ثبت نشده است"
+            "no_activity": "هیچ فعالیتی ثبت نشده است",
+            "user_details": "جزئیات کاربر: {{name}}",
+            "back_to_users": "بازگشت به لیست کاربران",
+            "main_info": "اطلاعات اصلی",
+            "time_info": "اطلاعات زمانی",
+            "email_verification": "تأیید ایمیل",
+            "not_verified": "تأیید نشده",
+            "make_regular_user": "تبدیل به کاربر عادی",
+            "activity_history": "تاریخچه فعالیت ها",
+            "no_activity_for_user": "هیچ فعالیتی برای این کاربر ثبت نشده است.",
+            "activity_table": {
+                "url": "آدرس",
+                "ip": "آی‌پی",
+                "date": "تاریخ"
+            }
         }
     }
 }

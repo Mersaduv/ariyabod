@@ -458,6 +458,7 @@
         "image_alt": "زموږ په اړه"
     },
     "slider_items": {
+        "delete": "ړنګ کړئ",
         "title": "د سلایډر مدیریت",
         "management": "د سلایډر مدیریت",
         "management_description": "د اصلي مخ سلایډر مدیریت. سلایډونه اضافه کول، سمول او حذف کول.",
@@ -525,7 +526,21 @@
             },
             "delete": "حذف",
             "no_users": "هیڅ کارونکی ونه موندل شو",
-            "no_activity": "هیڅ فعالیت نه دی ثبت شوی"
+            "no_activity": "هیڅ فعالیت نه دی ثبت شوی",
+            "user_details": "د کارونکي تفصیلات: {{name}}",
+            "back_to_users": "د کارونکو لیست ته بیرته ستنیدل",
+            "main_info": "اصلي معلومات",
+            "time_info": "د وخت معلومات",
+            "email_verification": "د برېښنالیک تصدیق",
+            "not_verified": "تصدیق شوی نه دی",
+            "make_regular_user": "عادي کارونکی جوړ کړئ",
+            "activity_history": "د فعالیتونو تاریخچه",
+            "no_activity_for_user": "د دې کارونکي لپاره هیڅ فعالیت نه دی ثبت شوی.",
+            "activity_table": {
+                "url": "پته",
+                "ip": "آی پي پته",
+                "date": "نېټه"
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ export default function SiteItems({ auth, circleItems, serviceItems }) {
     return (
         <DashboardLayout auth={auth}>
             <div className="p-4 space-y-6">
-                <h2 className="text-xl font-semibold">بنر آیتم های سایت</h2>
+                <h2 className="text-xl font-semibold">{t("site_items")}</h2>
                 <div className="p-4 sm:p-8 py-8 bg-white shadow border sm:rounded-lg">
                     <CircleItemsForm
                         circleItems={circleItems}

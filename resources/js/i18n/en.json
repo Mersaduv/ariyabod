@@ -135,6 +135,7 @@
     "add_social_media": "Add Social Media",
 
     "slider_items": {
+        "delete": "Delete",
         "title": "Slider Management",
         "management": "Slider Management",
         "management_description": "Manage the slider on the homepage. Add, edit, and remove slides.",
@@ -535,7 +536,21 @@
             },
             "delete": "Delete",
             "no_users": "No users found",
-            "no_activity": "No activity recorded"
+            "no_activity": "No activity recorded",
+            "user_details": "User Details: {{name}}",
+            "back_to_users": "Back to Users List",
+            "main_info": "Main Information",
+            "time_info": "Time Information",
+            "email_verification": "Email Verification",
+            "not_verified": "Not verified",
+            "make_regular_user": "Make Regular User",
+            "activity_history": "Activity History",
+            "no_activity_for_user": "No activity has been recorded for this user.",
+            "activity_table": {
+                "url": "URL",
+                "ip": "IP Address",
+                "date": "Date"
+            }
         }
     }
 }

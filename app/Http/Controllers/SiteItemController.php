@@ -105,7 +105,7 @@ class SiteItemController extends Controller
                 'description' => $type === 'service' ? $itemData['description'] : null,
                 'link' => $itemData['link'] ?? null,
                 'image' => $itemData['image'],
-                'status' => $itemData['status'] ?? true,
+                'status' => $itemData['status'] ? 1 : 0,
                 'order' => $index,
             ]);
         }

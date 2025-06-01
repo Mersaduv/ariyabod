@@ -15,6 +15,10 @@ import { IoClose } from "react-icons/io5";
 export default function CircleItemsForm({ circleItems = [], message }) {
     const { t } = useTranslation();
 
+    // Check if circleItems has any items and get the status of the first item
+    const hasItems = circleItems.length > 0;
+    const firstItemStatus = hasItems ? Boolean(circleItems.sort((a, b) => a.order - b.order)[0]?.status) : true;
+
     const {
         data,
         setData,
@@ -24,6 +28,7 @@ export default function CircleItemsForm({ circleItems = [], message }) {
         wasSuccessful,
         recentlySuccessful,
     } = useForm({
+        status: firstItemStatus, // Set the initial status based on the first item
         items: circleItems.sort((a, b) => a.order - b.order).length
             ? circleItems
             : [

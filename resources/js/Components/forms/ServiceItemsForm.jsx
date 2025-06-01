@@ -14,6 +14,9 @@ import CustomCheckbox from "../ui/Checkbox";
 export default function ServiceItemsForm({ serviceItems = [], message }) {
     const { t } = useTranslation();
 
+    const hasItems = serviceItems.length > 0;
+    const firstItemStatus = hasItems ? Boolean(serviceItems.sort((a, b) => a.order - b.order)[0]?.status) : true;
+
     const {
         data,
         setData,
@@ -23,6 +26,7 @@ export default function ServiceItemsForm({ serviceItems = [], message }) {
         wasSuccessful,
         recentlySuccessful,
     } = useForm({
+        status: firstItemStatus,
         items: serviceItems.sort((a, b) => a.order - b.order).length
             ? serviceItems
             : [

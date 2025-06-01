@@ -178,7 +178,11 @@ export default function HeaderV2({ auth, servicesItems }) {
                                                         {t("profile")}
                                                     </Dropdown.Link>
                                                     <Dropdown.Link
-                                                        href={route("logout")}
+                                                        href={route(
+                                                            isV2
+                                                                ? "v2.logout"
+                                                                : "logout"
+                                                        )}
                                                         method="post"
                                                         as="button"
                                                         className="text-red-500"

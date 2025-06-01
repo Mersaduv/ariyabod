@@ -8,11 +8,18 @@ import { IoLocationSharp } from "react-icons/io5";
 import { BsFillTelephoneFill } from "react-icons/bs";
 import TextInput from "@/Components/TextInput";
 
-export default function ContactUs({ auth, headerData, footerData, servicesItems }) {
+export default function ContactUs({
+    auth,
+    headerData,
+    footerData,
+    servicesItems,
+}) {
     const { t, i18n } = useTranslation();
     const { flash } = usePage().props;
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { url } = usePage();
+    const isV2 = url === "/v2" || url.startsWith("/v2/");
 
     const { data, setData, post, processing, errors, reset } = useForm({
         first_name: "",
@@ -47,7 +54,9 @@ export default function ContactUs({ auth, headerData, footerData, servicesItems 
         post(route("contact-us.submit"), {
             onSuccess: () => {
                 reset();
-                toast.success(t("contact_us.message_sent_success"), { id: toastId });
+                toast.success(t("contact_us.message_sent_success"), {
+                    id: toastId,
+                });
                 setIsSubmitting(false);
             },
             onError: () => {
@@ -62,10 +71,19 @@ export default function ContactUs({ auth, headerData, footerData, servicesItems 
     };
 
     return (
-        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData} servicesItems={servicesItems}>
+        <AppLayoutSwitcher
+            auth={auth}
+            headerData={headerData}
+            footerData={footerData}
+            servicesItems={servicesItems}
+        >
             <Head title={t("nav.contactUs")} />
 
-            <div className="mb-10 pt-[60px]">
+            <div
+                className={`mb-10 ${
+                    isV2 ? "-mt-1.5 md1:pt-[30px]" : "pt-[60px]"
+                } `}
+            >
                 {/* Google Map Section */}
                 <div className="w-full h-[400px] relative">
                     <iframe
@@ -94,7 +112,10 @@ export default function ContactUs({ auth, headerData, footerData, servicesItems 
                         {addresses.length > 0 && (
                             <div className="mb-2">
                                 {addresses.map((address, index) => (
-                                    <div key={`address-${index}`} className="flex justify-center text-base text-gray-600 gap-1 mb-1">
+                                    <div
+                                        key={`address-${index}`}
+                                        className="flex justify-center text-base text-gray-600 gap-1 mb-1"
+                                    >
                                         {index === 0 && (
                                             <div className="flex items-start gap-0.5 text-black font-semibold">
                                                 <IoLocationSharp className="text-lg" />
@@ -162,7 +183,9 @@ export default function ContactUs({ auth, headerData, footerData, servicesItems 
                                             id="first_name"
                                             name="first_name"
                                             type="text"
-                                            placeholder={t("contact_us.first_name")}
+                                            placeholder={t(
+                                                "contact_us.first_name"
+                                            )}
                                             value={data.first_name}
                                             onChange={(e) =>
                                                 setData(
@@ -180,7 +203,9 @@ export default function ContactUs({ auth, headerData, footerData, servicesItems 
                                             id="last_name"
                                             name="last_name"
                                             type="text"
-                                            placeholder={t("contact_us.last_name")}
+                                            placeholder={t(
+                                                "contact_us.last_name"
+                                            )}
                                             value={data.last_name}
                                             onChange={(e) =>
                                                 setData(
@@ -198,7 +223,9 @@ export default function ContactUs({ auth, headerData, footerData, servicesItems 
                                             id="phone_number"
                                             name="phone_number"
                                             type="text"
-                                            placeholder={t("contact_us.phone_number")}
+                                            placeholder={t(
+                                                "contact_us.phone_number"
+                                            )}
                                             value={data.phone_number}
                                             onChange={(e) =>
                                                 setData(
@@ -230,7 +257,9 @@ export default function ContactUs({ auth, headerData, footerData, servicesItems 
                                         <textarea
                                             id="message"
                                             name="message"
-                                            placeholder={t("contact_us.message")}
+                                            placeholder={t(
+                                                "contact_us.message"
+                                            )}
                                             value={data.message}
                                             onChange={(e) =>
                                                 setData(

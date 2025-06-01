@@ -649,7 +649,7 @@ export default memo(function WelcomeV2({
 
                                 <div className="mt-12 text-center">
                                     <Link
-                                        href={`/packages`}
+                                        href={`/v2/packages`}
                                         className="px-8 py-3 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition inline-block"
                                     >
                                         {t("internet_packages.view_all")}

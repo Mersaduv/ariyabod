@@ -79,6 +79,7 @@ export default function Packages({
     internetPackages,
     provinces,
     types,
+    servicesItems,
 }) {
     const { t } = useTranslation();
     const lang = localStorage.getItem("lang") || "fa";
@@ -205,7 +206,7 @@ export default function Packages({
     }, []);
 
     return (
-        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData} servicesItems={servicesItems}>
             <Head title="Internet Packages - Ariyabod Companies Group" />
 
             <div className="py-12 bg-gray-50">

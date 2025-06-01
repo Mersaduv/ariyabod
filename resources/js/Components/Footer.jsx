@@ -17,13 +17,6 @@ export default function Footer({ footerData }) {
     // Get social media items with titles in the current language
     const socialMedia = footerData?.social_media || [];
 
-    console.log(
-        addresses,
-        contactNumbers,
-        socialMedia,
-        "addresses, contactNumbers, socialMedia"
-    );
-
     return (
         <footer className="bg-gray-100 text-center h-auto min-h-[397px] py-[80px]">
             <div className="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center h-full">

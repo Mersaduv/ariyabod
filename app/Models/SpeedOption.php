@@ -41,18 +41,15 @@ class SpeedOption extends Model
      */
     public function getSpeedInKbpsAttribute(): float
     {
-        // Convert to Kbps: KB/s * 8 = Kbps
-        // mb to Kbps: value * 1000 * 8
-        // gb to Kbps: value * 1000 * 1000 * 8
         switch ($this->unit) {
             case 'kb':
-                return $this->value * 8;
+                return $this->value;
             case 'mb':
-                return $this->value * 1000 * 8;
+                return $this->value * 1000;
             case 'gb':
-                return $this->value * 1000 * 1000 * 8;
+                return $this->value * 1000 * 1000;
             default:
-                return $this->value * 8;
+                return $this->value;
         }
     }
 

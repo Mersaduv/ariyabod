@@ -14,6 +14,9 @@ import CustomCheckbox from "../ui/Checkbox";
 export default function ServiceItemsForm({ serviceItems = [], message }) {
     const { t } = useTranslation();
 
+    const hasItems = serviceItems.length > 0;
+    const firstItemStatus = hasItems ? Boolean(serviceItems.sort((a, b) => a.order - b.order)[0]?.status) : true;
+
     const {
         data,
         setData,
@@ -23,6 +26,7 @@ export default function ServiceItemsForm({ serviceItems = [], message }) {
         wasSuccessful,
         recentlySuccessful,
     } = useForm({
+        status: firstItemStatus,
         items: serviceItems.sort((a, b) => a.order - b.order).length
             ? serviceItems
             : [
@@ -75,12 +79,26 @@ export default function ServiceItemsForm({ serviceItems = [], message }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route("admin.site-items.store"), {
-            preserveScroll: true,
-            headers: {
-                "X-Lang": localStorage.getItem("lang") || "fa",
+
+        // Convert boolean status values to integers before submission
+        const formattedItems = data.items.map((item) => ({
+            ...item,
+            status: data.status ? (item.status ? 1 : 0) : 0,
+        }));
+
+        post(
+            route("admin.site-items.store"),
+            {
+                items: formattedItems,
+                status: data.status ? 1 : 0,
             },
-        });
+            {
+                preserveScroll: true,
+                headers: {
+                    "X-Lang": localStorage.getItem("lang") || "fa",
+                },
+            }
+        );
     };
 
     useInertiaResponseHandler({
@@ -101,7 +119,16 @@ export default function ServiceItemsForm({ serviceItems = [], message }) {
                         label={t("service_items.is_enabled")}
                         name="status"
                         checked={data.status}
-                        onChange={(e) => setData("status", e.target.checked)}
+                        onChange={(e) => {
+                            const newStatus = e.target.checked;
+                            setData({
+                                status: newStatus,
+                                items: data.items.map((item) => ({
+                                    ...item,
+                                    status: newStatus,
+                                })),
+                            });
+                        }}
                     />
                 </div>
             </div>

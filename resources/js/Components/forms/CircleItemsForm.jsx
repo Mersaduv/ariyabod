@@ -15,6 +15,10 @@ import { IoClose } from "react-icons/io5";
 export default function CircleItemsForm({ circleItems = [], message }) {
     const { t } = useTranslation();
 
+    // Check if circleItems has any items and get the status of the first item
+    const hasItems = circleItems.length > 0;
+    const firstItemStatus = hasItems ? Boolean(circleItems.sort((a, b) => a.order - b.order)[0]?.status) : true;
+
     const {
         data,
         setData,
@@ -24,6 +28,7 @@ export default function CircleItemsForm({ circleItems = [], message }) {
         wasSuccessful,
         recentlySuccessful,
     } = useForm({
+        status: firstItemStatus, // Set the initial status based on the first item
         items: circleItems.sort((a, b) => a.order - b.order).length
             ? circleItems
             : [
@@ -78,7 +83,10 @@ export default function CircleItemsForm({ circleItems = [], message }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         post(route("admin.site-items.store"), {
+            status: data.status ? 1 : 0,
+        }, {
             preserveScroll: true,
             headers: {
                 "X-Lang": localStorage.getItem("lang") || "fa",
@@ -104,7 +112,16 @@ export default function CircleItemsForm({ circleItems = [], message }) {
                         label={t("circle_items.is_enabled")}
                         name="status"
                         checked={data.status}
-                        onChange={(e) => setData("status", e.target.checked)}
+                        onChange={(e) => {
+                            const newStatus = e.target.checked;
+                            setData({
+                                status: newStatus,
+                                items: data.items.map(item => ({
+                                    ...item,
+                                    status: newStatus
+                                }))
+                            });
+                        }}
                     />
                 </div>
             </div>

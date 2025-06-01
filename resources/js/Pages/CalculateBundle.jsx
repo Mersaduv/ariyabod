@@ -3,14 +3,21 @@ import { Head } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useRef } from "react";
 
-export default function CalculateBundle({ auth, headerData, footerData, speedOptions }) {
+export default function CalculateBundle({
+    auth,
+    headerData,
+    footerData,
+    speedOptions,
+    servicesItems,
+}) {
     const { t, i18n } = useTranslation(); // translation text and i18n instance
     const lang = localStorage.getItem("lang") || "fa";
 
     // Get default speed from the first speed option or use 420 Kbps as fallback
-    const defaultSpeed = speedOptions && speedOptions.length > 0
-        ? speedOptions[0].speed_in_kbps
-        : 420;
+    const defaultSpeed =
+        speedOptions && speedOptions.length > 0
+            ? speedOptions[0].speed_in_kbps
+            : 420;
 
     const [speed, setSpeed] = useState(defaultSpeed);
     const [speedUnit, setSpeedUnit] = useState("Kb"); // Unit for speed
@@ -336,20 +343,23 @@ export default function CalculateBundle({ auth, headerData, footerData, speedOpt
                         onChange={(e) => setSpeed(e.target.value)}
                         className="w-full border-gray-300 rounded-lg focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                     >
-                        {speedOptions && speedOptions.length > 0 ? (
-                            speedOptions.map((option) => (
-                                <option key={option.id} value={option.speed_in_kbps}>
-                                    {option.formatted_speed}
-                                </option>
-                            ))
-                        ) : (
-                            // Fallback options if no speed options are available
-                            [128, 256, 512, 1024, 2048, 4096].map((value) => (
-                                <option key={value} value={value}>
-                                    {value < 1000 ? `${value} Kb` : `${value/1000} Mb`}
-                                </option>
-                            ))
-                        )}
+                        {speedOptions && speedOptions.length > 0
+                            ? speedOptions.map((option) => (
+                                  <option
+                                      key={option.id}
+                                      value={option.speed_in_kbps}
+                                  >
+                                      {option.formatted_speed}
+                                  </option>
+                              ))
+                            : // Fallback options if no speed options are available
+                              [128, 256, 512, 1024, 2048, 4096].map((value) => (
+                                  <option key={value} value={value}>
+                                      {value < 1000
+                                          ? `${value} Kb`
+                                          : `${value / 1000} Mb`}
+                                  </option>
+                              ))}
                     </select>
                 </div>
             </div>
@@ -592,7 +602,12 @@ export default function CalculateBundle({ auth, headerData, footerData, speedOpt
     };
 
     return (
-        <AppLayoutSwitcher auth={auth} headerData={headerData} footerData={footerData}>
+        <AppLayoutSwitcher
+            auth={auth}
+            headerData={headerData}
+            footerData={footerData}
+            servicesItems={servicesItems}
+        >
             <Head title={t("calculator.title")} />
 
             <div className="container mx-auto px-4 py-16 pt-24 text-center">

@@ -196,6 +196,7 @@ export default function Welcome({
             auth={auth}
             headerData={headerData}
             footerData={footerData}
+            servicesItems={servicesItems}
         >
             <div>
                 <Head title="Ariyabod Companies Group" />
@@ -266,10 +267,13 @@ export default function Welcome({
                                     >
                                         {circleItems &&
                                             circleItems
-                                                .slice(1)
                                                 .sort(
                                                     (a, b) => a.order - b.order
                                                 )
+                                                .filter(
+                                                    (item) => item.status == 1
+                                                )
+                                                .slice(1)
                                                 .map((item, i) => {
                                                     const angle = itemAngle * i;
                                                     const x =
@@ -339,6 +343,7 @@ export default function Welcome({
                                     >
                                         {circleItems
                                             .sort((a, b) => a.order - b.order)
+                                            .filter((item) => item.status == 1)
                                             .slice(1)
                                             .map((item, index) => (
                                                 <div
@@ -387,7 +392,7 @@ export default function Welcome({
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             version="1.1"
-                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xmlnsXlink="http://www.w3.org/1999/xlink"
                             xmlns:svgjs="http://svgjs.com/svgjs"
                             width="100%"
                             height="250"
@@ -418,27 +423,29 @@ export default function Welcome({
                         </h1>
                         <div className="grid px-4 pb-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {servicesItems &&
-                                servicesItems.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        data-aos="fade-up"
-                                        data-aos-delay={index * 100}
-                                    >
-                                        <div className="rounded-full flex flex-col items-center justify-center mb-4">
-                                            <img
-                                                src={item.image}
-                                                alt={item.title[lang]}
-                                                className="w-[200px] h-[200px] object-contain rounded-full"
-                                            />
+                                servicesItems
+                                    .filter((item) => item.status == 1)
+                                    .map((item, index) => (
+                                        <div
+                                            key={index}
+                                            data-aos="fade-up"
+                                            data-aos-delay={index * 100}
+                                        >
+                                            <div className="rounded-full flex flex-col items-center justify-center mb-4">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.title[lang]}
+                                                    className="w-[200px] h-[200px] object-contain rounded-full"
+                                                />
+                                            </div>
+                                            <h1 className="text-2xl text-center">
+                                                {item.title[lang]}
+                                            </h1>
+                                            <p className="text-center">
+                                                {item.description[lang]}
+                                            </p>
                                         </div>
-                                        <h1 className="text-2xl text-center">
-                                            {item.title[lang]}
-                                        </h1>
-                                        <p className="text-center">
-                                            {item.description[lang]}
-                                        </p>
-                                    </div>
-                                ))}
+                                    ))}
                         </div>
 
                         {/* Internet Packages Section */}
@@ -634,35 +641,59 @@ export default function Welcome({
                                                                             <FaCheck className="text-white text-[15px]" />
                                                                         </div>
                                                                         <span>
-                                                                            {formatSpeed(pkg.speed_mb, t, lang)}
+                                                                            {formatSpeed(
+                                                                                pkg.speed_mb,
+                                                                                t,
+                                                                                lang
+                                                                            )}
                                                                         </span>
                                                                     </div>
                                                                 )}
 
                                                                 {/* After Daily Limit Speed */}
-                                                                {pkg.daily_limit_gb && pkg.after_daily_limit_speed_mb !== undefined && (
-                                                                    <div className="flex gap-2">
-                                                                        <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
-                                                                            <FaCheck className="text-white text-[15px]" />
+                                                                {pkg.daily_limit_gb &&
+                                                                    pkg.after_daily_limit_speed_mb !==
+                                                                        undefined && (
+                                                                        <div className="flex gap-2">
+                                                                            <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                                <FaCheck className="text-white text-[15px]" />
+                                                                            </div>
+                                                                            <span>
+                                                                                {t(
+                                                                                    "internet_packages.after_daily_limit"
+                                                                                )}{" "}
+                                                                                {formatSpeed(
+                                                                                    pkg.after_daily_limit_speed_mb,
+                                                                                    t,
+                                                                                    lang
+                                                                                )}
+                                                                            </span>
                                                                         </div>
-                                                                        <span>
-                                                                            {t("internet_packages.after_daily_limit")}{" "}
-                                                                            {formatSpeed(pkg.after_daily_limit_speed_mb, t, lang)}
-                                                                        </span>
-                                                                    </div>
-                                                                )}
+                                                                    )}
 
                                                                 {/* Speed Slots for Unlimited packages */}
-                                                                {pkg.type === "unlimited" &&
+                                                                {pkg.type ===
+                                                                    "unlimited" &&
                                                                     pkg.speed_slots &&
-                                                                    Object.keys(pkg.speed_slots).length > 0 && (
+                                                                    Object.keys(
+                                                                        pkg.speed_slots
+                                                                    ).length >
+                                                                        0 && (
                                                                         <div className="space-y-3">
                                                                             {Object.entries(
                                                                                 pkg.speed_slots
                                                                             ).map(
-                                                                                ([key, slot], idx) => (
+                                                                                (
+                                                                                    [
+                                                                                        key,
+                                                                                        slot,
+                                                                                    ],
+                                                                                    idx
+                                                                                ) => (
                                                                                     <div
-                                                                                        key={idx}
+                                                                                        key={
+                                                                                            idx
+                                                                                        }
                                                                                         className="flex gap-2 text-sm"
                                                                                     >
                                                                                         <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
@@ -670,15 +701,23 @@ export default function Welcome({
                                                                                         </div>
                                                                                         <div className="flex gap-1 items-center">
                                                                                             <span>
-                                                                                                {t("internet_packages.from")}{" "}
+                                                                                                {t(
+                                                                                                    "internet_packages.from"
+                                                                                                )}{" "}
                                                                                                 {formatTimeToHumanReadable(
                                                                                                     slot.from
                                                                                                 )}{" "}
-                                                                                                {t("internet_packages.to")}{" "}
+                                                                                                {t(
+                                                                                                    "internet_packages.to"
+                                                                                                )}{" "}
                                                                                                 {formatTimeToHumanReadable(
                                                                                                     slot.to
                                                                                                 )}{" "}
-                                                                                                {formatSpeed(slot.speed_mb, t, lang)}
+                                                                                                {formatSpeed(
+                                                                                                    slot.speed_mb,
+                                                                                                    t,
+                                                                                                    lang
+                                                                                                )}
                                                                                             </span>
                                                                                         </div>
                                                                                     </div>
@@ -695,21 +734,31 @@ export default function Welcome({
                                                                         </div>
                                                                         <div className="flex gap-1 items-center">
                                                                             <span className="text-sm">
-                                                                                {t("internet_packages.from")}{" "}
+                                                                                {t(
+                                                                                    "internet_packages.from"
+                                                                                )}{" "}
                                                                                 {formatTimeToHumanReadable(
                                                                                     formatTime(
                                                                                         pkg.night_free_start_time
                                                                                     )
                                                                                 )}{" "}
-                                                                                {t("internet_packages.to")}{" "}
+                                                                                {t(
+                                                                                    "internet_packages.to"
+                                                                                )}{" "}
                                                                                 {formatTimeToHumanReadable(
                                                                                     formatTime(
                                                                                         pkg.night_free_end_time
                                                                                     )
                                                                                 )}{" "}
                                                                                 {pkg.is_night_free
-                                                                                    ? t("internet_packages.free")
-                                                                                    : formatSpeed(pkg.night_free_speed_mb, t, lang)}
+                                                                                    ? t(
+                                                                                          "internet_packages.free"
+                                                                                      )
+                                                                                    : formatSpeed(
+                                                                                          pkg.night_free_speed_mb,
+                                                                                          t,
+                                                                                          lang
+                                                                                      )}
                                                                             </span>
                                                                         </div>
                                                                     </div>
@@ -737,10 +786,10 @@ export default function Welcome({
                         {/* <!-- curved-div --> */}
                         <div className="rotate-180">
                             <svg
-                                class="packages_svg"
+                                className="packages_svg"
                                 xmlns="http://www.w3.org/2000/svg"
                                 version="1.1"
-                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xmlnsXlink="http://www.w3.org/1999/xlink"
                                 xmlns:svgjs="http://svgjs.com/svgjs"
                                 width="100%"
                                 height="100"
@@ -905,10 +954,10 @@ export default function Welcome({
                         {/* <!-- curved-div --> */}
                         <div className="rotate-180">
                             <svg
-                                class="packages_svg"
+                                className="packages_svg"
                                 xmlns="http://www.w3.org/2000/svg"
                                 version="1.1"
-                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xmlnsXlink="http://www.w3.org/1999/xlink"
                                 xmlns:svgjs="http://svgjs.com/svgjs"
                                 width="100%"
                                 height="100"

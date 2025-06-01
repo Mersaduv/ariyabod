@@ -25,7 +25,7 @@ export default function Footer({ footerData }) {
     );
 
     return (
-        <footer className="bg-gray-100 py-6 text-center h-auto min-h-[397px]">
+        <footer className="bg-gray-100 text-center h-auto min-h-[397px] py-[80px]">
             <div className="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center h-full">
                 <div className="">
                     <img

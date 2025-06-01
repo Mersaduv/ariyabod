@@ -1,489 +1,368 @@
-import { Head } from "@inertiajs/react";
-import AppLayoutSwitcher from "../Layouts/AppLayoutSwitcher";
-import { useTranslation } from "react-i18next";
+// مسیر: resources/js/Pages/NetworkTest.jsx
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import { Head } from "@inertiajs/react";
+import AppLayout from "../Layouts/AppLayout";
+import { useTranslation } from "react-i18next";
+import AppLayoutSwitcher from "@/Layouts/AppLayoutSwitcher";
+const TEST_DURATION = 13000;
+const PING_COUNT = 10;
+const DOWNLOAD_CONNECTIONS = 6;
+const UPLOAD_CONNECTIONS = 4;
 
 export default function NetworkTest({ auth, headerData, footerData }) {
     const { t } = useTranslation();
-    const [downloadSpeed, setDownloadSpeed] = useState({ method1: null, method2: null, method3: null });
-    const [uploadSpeed, setUploadSpeed] = useState({ method1: null, method2: null, method3: null });
-    const [ping, setPing] = useState({ method1: null, method2: null, method3: null });
-    const [isLoading, setIsLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
-    const [averages, setAverages] = useState({ download: null, upload: null, ping: null });
+    const [ping, setPing] = useState(null);
+    const [downloadSpeed, setDownloadSpeed] = useState(null);
+    const [uploadSpeed, setUploadSpeed] = useState(null);
+    const [testing, setTesting] = useState(false);
+    const [testPhase, setTestPhase] = useState(null);
+    const [currentSpeed, setCurrentSpeed] = useState(0);
+    const [targetSpeed, setTargetSpeed] = useState(0);
+    const [ip, setIP] = useState(null);
+    const [location, setLocation] = useState(null);
+    const [server, setServer] = useState("آریابد");
+    const [country, setCountry] = useState(null);
+    const [showServerSection, setShowServerSection] = useState(false);
+    const [showTestInterface, setShowTestInterface] = useState(false);
 
-    // Method 1: File download/upload timing with multiple samples
-    const measureSpeedMethod1 = async () => {
-        try {
-            // Multiple ping samples for accuracy
-            let pingResults = [];
-            for (let i = 0; i < 5; i++) {
-                const pingStart = performance.now();
-                await axios.get('/api/ping-test', {
-                    params: { timestamp: new Date().getTime() },
-                    // Cancel if it takes too long
-                    timeout: 5000
-                });
-                const pingEnd = performance.now();
-                pingResults.push(pingEnd - pingStart);
-                // Small delay between tests
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
+    const canvasRef = useRef(null);
+    const animationRef = useRef(null);
+    const lang = localStorage.getItem("lang") || "fa";
+    // اگر از API استفاده می‌کنید، کلید API را اینجا قرار دهید یا از env استفاده کنید
+    const apiKey = import.meta.env.VITE_IP_API_KEY || "";
 
-            // Remove outliers (highest and lowest)
-            pingResults.sort((a, b) => a - b);
-            if (pingResults.length > 2) {
-                pingResults = pingResults.slice(1, -1);
-            }
-
-            // Calculate average ping
-            const avgPing = pingResults.reduce((a, b) => a + b, 0) / pingResults.length;
-            setPing(prev => ({ ...prev, method1: avgPing.toFixed(2) }));
-
-            // Multiple download samples of increasing size for better accuracy
-            const downloadSizes = [1, 2, 5, 10].map(size => size * 1024 * 1024); // 1MB, 2MB, 5MB, 10MB
-            let downloadResults = [];
-
-            for (const fileSize of downloadSizes) {
-                const downloadStart = performance.now();
-                await axios.get('/api/test-download', {
-                    params: {
-                        size: fileSize,
-                        timestamp: new Date().getTime()
-                    },
-                    responseType: 'blob',
-                    timeout: 30000 // 30 seconds timeout
-                });
-                const downloadEnd = performance.now();
-                const downloadDuration = (downloadEnd - downloadStart) / 1000; // seconds
-                // Calculate speed in Mbps (megabits per second)
-                const downloadSpeedMbps = (fileSize * 8 / 1024 / 1024) / downloadDuration;
-                downloadResults.push(downloadSpeedMbps);
-                // Small delay between tests
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-
-            // Use larger sample sizes with more weight (simple weighted average)
-            const totalWeight = downloadSizes.reduce((sum, size, i) => sum + size, 0);
-            const weightedAvgDownload = downloadResults.reduce((sum, speed, i) =>
-                sum + (speed * downloadSizes[i]), 0) / totalWeight;
-
-            setDownloadSpeed(prev => ({ ...prev, method1: weightedAvgDownload.toFixed(2) }));
-
-            // Multiple upload samples
-            const uploadSizes = [1, 2, 5].map(size => size * 1024 * 1024); // 1MB, 2MB, 5MB
-            let uploadResults = [];
-
-            for (const uploadSize of uploadSizes) {
-                const testData = new Blob([new ArrayBuffer(uploadSize)]);
-                const uploadStart = performance.now();
-                await axios.post('/api/test-upload', testData, {
-                    headers: { 'Content-Type': 'application/octet-stream' },
-                    timeout: 30000 // 30 seconds timeout
-                });
-                const uploadEnd = performance.now();
-                const uploadDuration = (uploadEnd - uploadStart) / 1000; // seconds
-                const uploadSpeedMbps = (uploadSize * 8 / 1024 / 1024) / uploadDuration; // Mbps
-                uploadResults.push(uploadSpeedMbps);
-                // Small delay between tests
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-
-            // Weighted average for upload as well
-            const totalUploadWeight = uploadSizes.reduce((sum, size) => sum + size, 0);
-            const weightedAvgUpload = uploadResults.reduce((sum, speed, i) =>
-                sum + (speed * uploadSizes[i]), 0) / totalUploadWeight;
-
-            setUploadSpeed(prev => ({ ...prev, method1: weightedAvgUpload.toFixed(2) }));
-        } catch (error) {
-            console.error("Method 1 error:", error);
-            setErrorMessage(prev => prev + " Method 1 failed. ");
+    const measurePing = async () => {
+        setTestPhase("ping");
+        let total = 0;
+        for (let i = 0; i < PING_COUNT; i++) {
+            const start = performance.now();
+            await fetch("/speedtest/ping?_t=" + Date.now());
+            const duration = performance.now() - start;
+            total += duration;
         }
+        return total / PING_COUNT;
     };
 
-    // Method 2: WebRTC connection stats with better peer connection handling
-    const measureSpeedMethod2 = async () => {
-        try {
-            // Create RTCPeerConnection with STUN servers
-            const pc = new RTCPeerConnection({
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun2.l.google.com:19302' }
-                ]
-            });
+    const runDownloadTest = async () => {
+        setTestPhase("download");
+        setTargetSpeed(0);
+        setCurrentSpeed(0);
 
-            // Create data channel with specific options for speed testing
-            const dataChannel = pc.createDataChannel('speedtest', {
-                ordered: true,
-                maxRetransmits: 1
-            });
+        let totalBytes = 0;
+        const startTime = performance.now();
+        const controllers = [];
 
-            // Data tracking variables
-            let downloadStart = null;
-            let uploadStart = null;
-            let downloadBytes = 0;
-            let uploadBytes = 0;
-            let downloadInterval = null;
-            let uploadInterval = null;
-            let pingStart = performance.now();
-            let pingMeasured = false;
-            let pingValue = 0;
+        const download = async (ctrl) => {
+            try {
+                const response = await fetch("/speedtest/download-file", {
+                    signal: ctrl.signal,
+                });
+                const reader = response.body.getReader();
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    totalBytes += value.length;
 
-            // Add event handlers
-            dataChannel.onopen = () => {
-                // Start downloading (receiving) data
-                downloadStart = performance.now();
-
-                // Send some data to measure upload speed
-                uploadStart = performance.now();
-                const uploadData = new ArrayBuffer(16 * 1024); // 16KB chunks
-
-                // Send data continuously for 5 seconds to measure upload
-                uploadInterval = setInterval(() => {
-                    try {
-                        dataChannel.send(uploadData);
-                        uploadBytes += uploadData.byteLength;
-                    } catch (e) {
-                        console.warn("Error sending data:", e);
+                    // Update current speed during test
+                    const currentDuration =
+                        (performance.now() - startTime) / 1000;
+                    if (currentDuration > 0) {
+                        const currentSpeedMbps =
+                            (totalBytes * 8) / currentDuration / 1024 / 1024;
+                        setTargetSpeed(currentSpeedMbps);
                     }
-                }, 10); // Try to send every 10ms
+                }
+            } catch {}
+        };
 
-                // Stop upload test after 5 seconds
-                setTimeout(() => {
-                    if (uploadInterval) {
-                        clearInterval(uploadInterval);
-                        uploadInterval = null;
+        for (let i = 0; i < DOWNLOAD_CONNECTIONS; i++) {
+            const controller = new AbortController();
+            controllers.push(controller);
+            download(controller);
+        }
 
-                        // Calculate upload speed if we have data
-                        if (uploadBytes > 0) {
-                            const uploadDuration = (performance.now() - uploadStart) / 1000;
-                            const uploadSpeed = ((uploadBytes * 8) / uploadDuration) / 1000000; // Mbps
-                            setUploadSpeed(prev => ({ ...prev, method2: uploadSpeed.toFixed(2) }));
-                        }
+        await new Promise((resolve) => setTimeout(resolve, TEST_DURATION));
+        controllers.forEach((ctrl) => ctrl.abort());
+
+        const duration = (performance.now() - startTime) / 1000;
+        const speedMbps = (totalBytes * 8) / duration / 1024 / 1024;
+        setTargetSpeed(speedMbps);
+        return speedMbps;
+    };
+
+    const runUploadTest = async () => {
+        setTestPhase("upload");
+        setTargetSpeed(0);
+        setCurrentSpeed(0);
+
+        let totalBytes = 0;
+        const startTime = performance.now();
+        const dummyData = new Uint8Array(1024 * 1024); // 1MB
+        const shouldStop = { stop: false };
+
+        const upload = async () => {
+            try {
+                while (!shouldStop.stop) {
+                    await fetch("/speedtest/upload-target", {
+                        method: "POST",
+                        body: dummyData,
+                        headers: { "Content-Type": "application/octet-stream" },
+                    });
+                    totalBytes += dummyData.length;
+
+                    // Update current speed during test
+                    const currentDuration =
+                        (performance.now() - startTime) / 1000;
+                    if (currentDuration > 0) {
+                        const currentSpeedMbps =
+                            (totalBytes * 8) / currentDuration / 1024 / 1024;
+                        setTargetSpeed(currentSpeedMbps);
                     }
-                }, 5000);
-            };
-
-            dataChannel.onmessage = (event) => {
-                // Track downloaded data
-                downloadBytes += event.data.size || event.data.byteLength || 0;
-
-                // Measure ping on first message if not already measured
-                if (!pingMeasured) {
-                    pingValue = performance.now() - pingStart;
-                    pingMeasured = true;
-                    setPing(prev => ({ ...prev, method2: pingValue.toFixed(2) }));
                 }
-            };
+            } catch {}
+        };
 
-            // Create offer and set local description
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-
-            // Set timeout to close connection and calculate speeds
-            setTimeout(() => {
-                // Calculate download speed if we have data
-                if (downloadBytes > 0 && downloadStart) {
-                    const downloadDuration = (performance.now() - downloadStart) / 1000;
-                    const downloadSpeed = ((downloadBytes * 8) / downloadDuration) / 1000000; // Mbps
-                    setDownloadSpeed(prev => ({ ...prev, method2: downloadSpeed.toFixed(2) }));
-                }
-
-                // Clean up
-                if (uploadInterval) clearInterval(uploadInterval);
-                if (downloadInterval) clearInterval(downloadInterval);
-                dataChannel.close();
-                pc.close();
-            }, 10000); // Run test for 10 seconds
-
-            // If we haven't received ping after 5 seconds, use ICE candidate round trip time
-            pc.onicecandidate = (event) => {
-                if (event.candidate && !pingMeasured) {
-                    pingValue = performance.now() - pingStart;
-                    pingMeasured = true;
-                    setPing(prev => ({ ...prev, method2: pingValue.toFixed(2) }));
-                }
-            };
-        } catch (error) {
-            console.error("Method 2 error:", error);
-            setErrorMessage(prev => prev + " Method 2 failed. ");
+        const uploaders = [];
+        for (let i = 0; i < UPLOAD_CONNECTIONS; i++) {
+            uploaders.push(upload());
         }
+
+        await new Promise((resolve) => setTimeout(resolve, TEST_DURATION));
+        shouldStop.stop = true;
+
+        const duration = (performance.now() - startTime) / 1000;
+        const speedMbps = (totalBytes * 8) / duration / 1024 / 1024;
+        setTargetSpeed(speedMbps);
+        return speedMbps;
     };
 
-    // Method 3: XHR progressive download/upload with multiple sample points
-    const measureSpeedMethod3 = async () => {
+    // دریافت اطلاعات IP و موقعیت
+    const fetchIPInfo = async () => {
         try {
-            // Multiple ping samples
-            let pingSum = 0;
-            let pingCount = 0;
-
-            for (let i = 0; i < 5; i++) {
-                const pingXhr = new XMLHttpRequest();
-                pingXhr.open('GET', '/api/ping-test?timestamp=' + new Date().getTime(), true);
-                const pingStart = performance.now();
-
-                await new Promise((resolve, reject) => {
-                    pingXhr.onload = () => {
-                        if (pingXhr.status === 200) {
-                            const pingEnd = performance.now();
-                            pingSum += (pingEnd - pingStart);
-                            pingCount++;
-                            resolve();
-                        } else {
-                            reject(new Error('Ping request failed'));
-                        }
-                    };
-
-                    pingXhr.onerror = () => reject(new Error('XHR error on ping'));
-                    pingXhr.send();
-                });
-
-                // Short delay between pings
-                await new Promise(resolve => setTimeout(resolve, 200));
+            const res = await fetch(
+                `https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey}`
+            );
+            const data = await res.json();
+            setIP(data.ip);
+            setLocation(data.city);
+            setServer(data.isp);
+            setCountry(data.country_name);
+        } catch (e) {
+            console.error("خطا در دریافت اطلاعات IP:", e);
+            try {
+                // سرویس جایگزین در صورت خطا
+                const res = await fetch("https://ipapi.co/json/");
+                const data = await res.json();
+                setIP(data.ip);
+                setLocation(data.city);
+                setServer(data.org);
+                setCountry(data.country_name);
+            } catch (fallbackError) {
+                console.error("خطا در سرویس فالبک IP:", fallbackError);
+                setIP("نامشخص");
+                setLocation("نامشخص");
+                setServer("آریابد");
+                setCountry("نامشخص");
             }
-
-            if (pingCount > 0) {
-                setPing(prev => ({ ...prev, method3: (pingSum / pingCount).toFixed(2) }));
-            }
-
-            // Download speed test with progressive measurements
-            const downloadSizes = [2, 5, 10].map(size => size * 1024 * 1024); // 2MB, 5MB, 10MB
-            let downloadResults = [];
-
-            for (const downloadSize of downloadSizes) {
-                await new Promise((resolve) => {
-                    const downloadXhr = new XMLHttpRequest();
-                    downloadXhr.open('GET', `/api/test-download?size=${downloadSize}&timestamp=${new Date().getTime()}`, true);
-                    downloadXhr.responseType = 'arraybuffer';
-
-                    const downloadStart = performance.now();
-                    let lastDownloadTimestamp = downloadStart;
-                    let lastDownloadedBytes = 0;
-                    let downloadRates = [];
-
-                    downloadXhr.onprogress = (event) => {
-                        if (event.lengthComputable) {
-                            const currentTime = performance.now();
-                            const elapsedSeconds = (currentTime - lastDownloadTimestamp) / 1000;
-                            const bytesLoaded = event.loaded - lastDownloadedBytes;
-
-                            // Only log point if we received substantial data and some time passed
-                            if (elapsedSeconds > 0.1 && bytesLoaded > 10000) {
-                                lastDownloadTimestamp = currentTime;
-                                lastDownloadedBytes = event.loaded;
-
-                                const currentRate = (bytesLoaded * 8 / 1024 / 1024) / elapsedSeconds; // Mbps
-                                downloadRates.push(currentRate);
-                            }
-                        }
-                    };
-
-                    downloadXhr.onload = () => {
-                        if (downloadRates.length > 0) {
-                            // Remove outliers (top and bottom 10%)
-                            if (downloadRates.length > 10) {
-                                downloadRates.sort((a, b) => a - b);
-                                const cutLength = Math.floor(downloadRates.length * 0.1);
-                                downloadRates = downloadRates.slice(cutLength, downloadRates.length - cutLength);
-                            }
-
-                            const avgDownloadSpeed = downloadRates.reduce((a, b) => a + b, 0) / downloadRates.length;
-                            downloadResults.push(avgDownloadSpeed);
-                        } else {
-                            // Fallback if progressive calculation didn't work
-                            const totalTime = (performance.now() - downloadStart) / 1000;
-                            const totalSize = downloadSize * 8 / 1024 / 1024; // Mbits
-                            downloadResults.push(totalSize / totalTime);
-                        }
-                        resolve();
-                    };
-
-                    downloadXhr.onerror = () => {
-                        console.error("XHR download error");
-                        resolve();
-                    };
-
-                    downloadXhr.send();
-                });
-
-                // Short delay between downloads
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-
-            // Calculate weighted average for download
-            if (downloadResults.length > 0) {
-                // More weight to larger file sizes
-                const weightedAvgDownload = downloadResults.reduce((sum, result, i) =>
-                    sum + (result * downloadSizes[i]), 0) / downloadSizes.reduce((a, b) => a + b, 0);
-                setDownloadSpeed(prev => ({ ...prev, method3: weightedAvgDownload.toFixed(2) }));
-            }
-
-            // Upload speed test with progressive measurements
-            const uploadSizes = [1, 3, 5].map(size => size * 1024 * 1024); // 1MB, 3MB, 5MB
-            let uploadResults = [];
-
-            for (const uploadSize of uploadSizes) {
-                await new Promise((resolve) => {
-                    const uploadXhr = new XMLHttpRequest();
-                    const uploadData = new Blob([new ArrayBuffer(uploadSize)]);
-                    uploadXhr.open('POST', '/api/test-upload', true);
-
-                    const uploadStart = performance.now();
-                    let lastUploadTimestamp = uploadStart;
-                    let lastUploadedBytes = 0;
-                    let uploadRates = [];
-
-                    uploadXhr.upload.onprogress = (event) => {
-                        if (event.lengthComputable) {
-                            const currentTime = performance.now();
-                            const elapsedSeconds = (currentTime - lastUploadTimestamp) / 1000;
-                            const bytesSent = event.loaded - lastUploadedBytes;
-
-                            // Only log point if we sent substantial data and some time passed
-                            if (elapsedSeconds > 0.1 && bytesSent > 10000) {
-                                lastUploadTimestamp = currentTime;
-                                lastUploadedBytes = event.loaded;
-
-                                const currentRate = (bytesSent * 8 / 1024 / 1024) / elapsedSeconds; // Mbps
-                                uploadRates.push(currentRate);
-                            }
-                        }
-                    };
-
-                    uploadXhr.onload = () => {
-                        if (uploadRates.length > 0) {
-                            // Remove outliers (top and bottom 10%)
-                            if (uploadRates.length > 10) {
-                                uploadRates.sort((a, b) => a - b);
-                                const cutLength = Math.floor(uploadRates.length * 0.1);
-                                uploadRates = uploadRates.slice(cutLength, uploadRates.length - cutLength);
-                            }
-
-                            const avgUploadSpeed = uploadRates.reduce((a, b) => a + b, 0) / uploadRates.length;
-                            uploadResults.push(avgUploadSpeed);
-                        } else {
-                            // Fallback if progressive calculation didn't work
-                            const totalTime = (performance.now() - uploadStart) / 1000;
-                            const totalSize = uploadSize * 8 / 1024 / 1024; // Mbits
-                            uploadResults.push(totalSize / totalTime);
-                        }
-                        resolve();
-                    };
-
-                    uploadXhr.onerror = () => {
-                        console.error("XHR upload error");
-                        resolve();
-                    };
-
-                    uploadXhr.send(uploadData);
-                });
-
-                // Short delay between uploads
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-
-            // Calculate weighted average for upload
-            if (uploadResults.length > 0) {
-                const weightedAvgUpload = uploadResults.reduce((sum, result, i) =>
-                    sum + (result * uploadSizes[i]), 0) / uploadSizes.reduce((a, b) => a + b, 0);
-                setUploadSpeed(prev => ({ ...prev, method3: weightedAvgUpload.toFixed(2) }));
-            }
-        } catch (error) {
-            console.error("Method 3 error:", error);
-            setErrorMessage(prev => prev + " Method 3 failed. ");
         }
     };
 
-    // Calculate weighted averages from all methods
-    const calculateAverages = () => {
-        // Filter out null values and convert to numbers
-        const downloadValues = Object.values(downloadSpeed).filter(val => val !== null).map(Number);
-        const uploadValues = Object.values(uploadSpeed).filter(val => val !== null).map(Number);
-        const pingValues = Object.values(ping).filter(val => val !== null).map(Number);
-
-        // Calculate averages if we have values, giving more weight to methods that are more reliable
-        if (downloadValues.length > 0) {
-            // Method 1 has weight 2, Methods 2&3 have weight 1
-            const weights = [2, 1, 1];
-            let weightSum = 0;
-            let weightedSum = 0;
-
-            downloadValues.forEach((val, idx) => {
-                const weight = weights[idx] || 1;
-                weightedSum += val * weight;
-                weightSum += weight;
-            });
-
-            const avgDownload = weightSum > 0 ? weightedSum / weightSum : 0;
-            setAverages(prev => ({ ...prev, download: avgDownload.toFixed(2) }));
+    const startTest = async () => {
+        if (!showTestInterface) {
+            setShowTestInterface(true);
         }
 
-        if (uploadValues.length > 0) {
-            const weights = [2, 1, 1];
-            let weightSum = 0;
-            let weightedSum = 0;
+        setTesting(true);
+        setPing(null);
+        setDownloadSpeed(null);
+        setUploadSpeed(null);
+        setTestPhase(null);
+        setTargetSpeed(0);
+        setCurrentSpeed(0);
+        setShowServerSection(false);
+        setIP(null);
+        setLocation(null);
+        setServer("آریابد");
+        setCountry(null);
 
-            uploadValues.forEach((val, idx) => {
-                const weight = weights[idx] || 1;
-                weightedSum += val * weight;
-                weightSum += weight;
-            });
+        const pingResult = await measurePing();
+        setPing(pingResult.toFixed(2));
 
-            const avgUpload = weightSum > 0 ? weightedSum / weightSum : 0;
-            setAverages(prev => ({ ...prev, upload: avgUpload.toFixed(2) }));
-        }
+        const downloadResult = await runDownloadTest();
+        setDownloadSpeed(downloadResult.toFixed(2));
 
-        if (pingValues.length > 0) {
-            // For ping, method 1 is usually most accurate
-            const weights = [3, 1, 1];
-            let weightSum = 0;
-            let weightedSum = 0;
+        const uploadResult = await runUploadTest();
+        setUploadSpeed(uploadResult.toFixed(2));
 
-            pingValues.forEach((val, idx) => {
-                const weight = weights[idx] || 1;
-                weightedSum += val * weight;
-                weightSum += weight;
-            });
+        // بعد از تکمیل تست‌ها، اطلاعات IP را دریافت می‌کنیم
+        await fetchIPInfo();
 
-            const avgPing = weightSum > 0 ? weightedSum / weightSum : 0;
-            setAverages(prev => ({ ...prev, ping: avgPing.toFixed(2) }));
-        }
+        setTestPhase(null);
+        setTesting(false);
+        setShowServerSection(true);
     };
 
-    // Run all tests in sequence
-    const runSpeedTest = async () => {
-        setIsLoading(true);
-        setErrorMessage("");
-        setDownloadSpeed({ method1: null, method2: null, method3: null });
-        setUploadSpeed({ method1: null, method2: null, method3: null });
-        setPing({ method1: null, method2: null, method3: null });
-        setAverages({ download: null, upload: null, ping: null });
-
-        try {
-            // Run methods in parallel for faster results
-            await Promise.all([
-                measureSpeedMethod1(),
-                measureSpeedMethod2(),
-                measureSpeedMethod3()
-            ]);
-            calculateAverages();
-        } catch (error) {
-            console.error("Speed test error:", error);
-            setErrorMessage("Failed to complete speed test. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
+    // Canvas setup and animation
     useEffect(() => {
-        if (Object.values(downloadSpeed).some(val => val !== null) ||
-            Object.values(uploadSpeed).some(val => val !== null) ||
-            Object.values(ping).some(val => val !== null)) {
-            calculateAverages();
-        }
-    }, [downloadSpeed, uploadSpeed, ping]);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        const dpr = window.devicePixelRatio || 1;
+
+        const updateCanvasSize = () => {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+        };
+
+        updateCanvasSize();
+        window.addEventListener("resize", updateCanvasSize);
+
+        const animateGauge = () => {
+            if (Math.abs(currentSpeed - targetSpeed) > 0.1) {
+                setCurrentSpeed((prev) => prev + (targetSpeed - prev) * 0.1);
+            } else {
+                setCurrentSpeed(targetSpeed);
+            }
+
+            drawSpeedGauge();
+            animationRef.current = requestAnimationFrame(animateGauge);
+        };
+
+        const drawSpeedGauge = () => {
+            const width = canvas.width / dpr;
+            const height = canvas.height / dpr;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) * 0.4;
+
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#f8f9fa";
+            ctx.fill();
+            ctx.strokeStyle = "#dee2e6";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            const startAngle = Math.PI * 0.75;
+            const endAngle = Math.PI * 2.25;
+            const totalAngle = endAngle - startAngle;
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.85, startAngle, endAngle);
+            ctx.lineWidth = radius * 0.1;
+            ctx.strokeStyle = "#e9ecef";
+            ctx.lineCap = "butt";
+            ctx.stroke();
+
+            let fillAngle;
+            if (currentSpeed <= 100) {
+                fillAngle =
+                    startAngle + totalAngle * (currentSpeed / 100) * 0.5;
+            } else {
+                fillAngle =
+                    startAngle +
+                    totalAngle * 0.5 +
+                    totalAngle *
+                        ((Math.min(currentSpeed, 1000) - 100) / 900) *
+                        0.5;
+            }
+
+            if (currentSpeed > 0) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius * 0.85, startAngle, fillAngle);
+                ctx.lineWidth = radius * 0.1;
+                ctx.strokeStyle = "#51cf66";
+                ctx.lineCap = "butt";
+                ctx.stroke();
+            }
+
+            for (let i = 0; i <= 20; i++) {
+                let value;
+                let position;
+
+                if (i <= 10) {
+                    value = i * 10;
+                    position = i / 20;
+                } else {
+                    value = 100 + (i - 10) * 90;
+                    position = 0.5 + (i - 10) / 20;
+                }
+
+                const angle = startAngle + totalAngle * position;
+
+                if (i % 2 === 0 || i === 10) {
+                    const textX = centerX + Math.cos(angle) * (radius * 0.65);
+                    const textY = centerY + Math.sin(angle) * (radius * 0.65);
+
+                    ctx.font = `${radius * 0.13}px Arial`;
+                    ctx.fillStyle = "#495057";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(value.toString(), textX, textY);
+                }
+            }
+
+            let needlePosition;
+            if (currentSpeed <= 100) {
+                needlePosition = (currentSpeed / 100) * 0.5;
+            } else {
+                needlePosition =
+                    0.5 + ((Math.min(currentSpeed, 1000) - 100) / 900) * 0.5;
+            }
+
+            const needleAngle = startAngle + totalAngle * needlePosition;
+
+            ctx.beginPath();
+            ctx.moveTo(
+                centerX + Math.cos(needleAngle - Math.PI) * (radius * 0.1),
+                centerY + Math.sin(needleAngle - Math.PI) * (radius * 0.1)
+            );
+            ctx.lineTo(
+                centerX + Math.cos(needleAngle) * (radius * 0.8),
+                centerY + Math.sin(needleAngle) * (radius * 0.8)
+            );
+            ctx.strokeStyle = "#fa5252";
+            ctx.lineWidth = radius * 0.04;
+            ctx.lineCap = "round";
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.12, 0, Math.PI * 2);
+            ctx.fillStyle = "#fa5252";
+            ctx.fill();
+            ctx.strokeStyle = "#e03131";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.font = `bold ${radius * 0.25}px Arial`;
+            ctx.fillStyle = "#212529";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(
+                `${Math.round(currentSpeed * 10) / 10}`,
+                centerX,
+                centerY + radius * 0.3
+            );
+
+            ctx.font = `${radius * 0.15}px Arial`;
+            ctx.fillStyle = "#495057";
+            ctx.fillText("Mbps", centerX, centerY + radius * 0.5);
+        };
+
+        animationRef.current = requestAnimationFrame(animateGauge);
+
+        return () => {
+            window.removeEventListener("resize", updateCanvasSize);
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+            }
+        };
+    }, [currentSpeed, targetSpeed, testPhase]);
 
     return (
         <AppLayoutSwitcher
@@ -491,92 +370,257 @@ export default function NetworkTest({ auth, headerData, footerData }) {
             headerData={headerData}
             footerData={footerData}
         >
-            <Head title={"Network Test"} />
+            <Head title="Speed Test" />
+            <div className="w-full bg-gray-50">
+                <h1 className="text-3xl text-center font-bold mb-14 pt-[120px] px-4">
+                    {t("network_test.title")}
+                </h1>
+                {/* Initial test button */}
+                <div className="flex justify-center">
+                    {!showTestInterface && (
+                        <button
+                            className="my-6 px-8 py-3 primary text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
+                            onClick={startTest}
+                            disabled={testing}
+                        >
+                            {t("network_test.start_test")}
+                        </button>
+                    )}
+                </div>
 
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-                <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
-                    <h1 className="text-2xl font-bold mb-6">Network Speed Test</h1>
+                <div
+                    className={`w-full px-4 space-y-8 test-section ${
+                        showTestInterface ? "visible" : ""
+                    }`}
+                >
+                    {/* Performance section */}
+                    <style jsx>{`
+                        .test-section {
+                            opacity: 0;
+                            max-height: 0;
+                            overflow: hidden;
+                            transition: opacity 0.5s ease, max-height 0.5s ease;
+                        }
+                        .test-section.visible {
+                            opacity: 1;
+                            max-height: 1000px;
+                        }
+                    `}</style>
 
-                    <button
-                        onClick={runSpeedTest}
-                        disabled={isLoading}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
-                    >
-                        {isLoading ? "Testing..." : "Start Speed Test"}
-                    </button>
-
-                    {errorMessage && (
-                        <div className="mt-4 text-red-600">{errorMessage}</div>
+                    {!showTestInterface && (
+                        <button
+                            onClick={startTest}
+                            disabled={testing}
+                            className="my-6 px-8 py-3 primary text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
+                        >
+                            {t("network_test.start_test")}
+                        </button>
                     )}
 
-                    <div className="mt-8">
-                        <h2 className="text-xl font-semibold mb-4">Results</h2>
+                    <table className="w-[60%] mx-auto border-collapse">
+                        <thead>
+                            <tr className="border-y border-gray-200">
+                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                    {t("network_test.ping")}
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                    {t("network_test.download")}
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                    {t("network_test.upload")}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td
+                                    className={`text-lg relative text-center font-semibold py-2 ${
+                                        testPhase === "ping"
+                                            ? "text-green-500"
+                                            : "text-gray-700"
+                                    }`}
+                                >
+                                    {testPhase === "ping" && !ping && (
+                                        <div className="middle mt-5">
+                                            <div className="bar bar1"></div>
+                                            <div className="bar bar2"></div>
+                                            <div className="bar bar3"></div>
+                                            <div className="bar bar4"></div>
+                                            <div className="bar bar5"></div>
+                                            <div className="bar bar6"></div>
+                                            <div className="bar bar7"></div>
+                                            <div className="bar bar8"></div>
+                                        </div>
+                                    )}
+                                    {ping ? `${ping} ms` : ""}
+                                </td>
+                                <td
+                                    className={`text-lg relative text-center font-semibold py-2 ${
+                                        testPhase === "download"
+                                            ? "text-green-500"
+                                            : "text-gray-700"
+                                    }`}
+                                >
+                                    {testPhase === "download" &&
+                                        !downloadSpeed && (
+                                            <div className="middle pt-3">
+                                                <div className="bar bar1"></div>
+                                                <div className="bar bar2"></div>
+                                                <div className="bar bar3"></div>
+                                                <div className="bar bar4"></div>
+                                                <div className="bar bar5"></div>
+                                                <div className="bar bar6"></div>
+                                                <div className="bar bar7"></div>
+                                                <div className="bar bar8"></div>
+                                            </div>
+                                        )}
+                                    {downloadSpeed
+                                        ? `${downloadSpeed} Mbps`
+                                        : ""}
+                                </td>
+                                <td
+                                    className={`text-lg relative text-center font-semibold py-2 ${
+                                        testPhase === "upload"
+                                            ? "text-green-500"
+                                            : "text-gray-700"
+                                    }`}
+                                >
+                                    {testPhase === "upload" && !uploadSpeed && (
+                                        <div className="middle pt-3">
+                                            <div className="bar bar1"></div>
+                                            <div className="bar bar2"></div>
+                                            <div className="bar bar3"></div>
+                                            <div className="bar bar4"></div>
+                                            <div className="bar bar5"></div>
+                                            <div className="bar bar6"></div>
+                                            <div className="bar bar7"></div>
+                                            <div className="bar bar8"></div>
+                                        </div>
+                                    )}
+                                    {uploadSpeed ? `${uploadSpeed} Mbps` : ""}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                        <div className="space-y-6">
-                            <div>
-                                <h3 className="text-lg font-medium">Download Speed</h3>
-                                <div className="grid grid-cols-3 gap-4 mt-2">
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 1</p>
-                                        <p className="text-lg font-medium">{downloadSpeed.method1 ? `${downloadSpeed.method1} Mbps` : '-'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 2</p>
-                                        <p className="text-lg font-medium">{downloadSpeed.method2 ? `${downloadSpeed.method2} Mbps` : '-'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 3</p>
-                                        <p className="text-lg font-medium">{downloadSpeed.method3 ? `${downloadSpeed.method3} Mbps` : '-'}</p>
-                                    </div>
-                                </div>
-                                <div className="mt-2 font-bold">
-                                    Average: {averages.download ? `${averages.download} Mbps` : '-'}
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-lg font-medium">Upload Speed</h3>
-                                <div className="grid grid-cols-3 gap-4 mt-2">
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 1</p>
-                                        <p className="text-lg font-medium">{uploadSpeed.method1 ? `${uploadSpeed.method1} Mbps` : '-'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 2</p>
-                                        <p className="text-lg font-medium">{uploadSpeed.method2 ? `${uploadSpeed.method2} Mbps` : '-'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 3</p>
-                                        <p className="text-lg font-medium">{uploadSpeed.method3 ? `${uploadSpeed.method3} Mbps` : '-'}</p>
-                                    </div>
-                                </div>
-                                <div className="mt-2 font-bold">
-                                    Average: {averages.upload ? `${averages.upload} Mbps` : '-'}
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-lg font-medium">Ping</h3>
-                                <div className="grid grid-cols-3 gap-4 mt-2">
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 1</p>
-                                        <p className="text-lg font-medium">{ping.method1 ? `${ping.method1} ms` : '-'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 2</p>
-                                        <p className="text-lg font-medium">{ping.method2 ? `${ping.method2} ms` : '-'}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <p className="text-sm text-gray-600">Method 3</p>
-                                        <p className="text-lg font-medium">{ping.method3 ? `${ping.method3} ms` : '-'}</p>
-                                    </div>
-                                </div>
-                                <div className="mt-2 font-bold">
-                                    Average: {averages.ping ? `${averages.ping} ms` : '-'}
-                                </div>
-                            </div>
-                        </div>
+                    {/* Canvas gauge */}
+                    <div
+                        className={`relative mb-6 w-full max-w-md mx-auto ${
+                            !testing && !testPhase ? "hidden" : ""
+                        }`}
+                    >
+                        <canvas
+                            ref={canvasRef}
+                            className="w-full aspect-square"
+                        />
                     </div>
+
+                    {/* Server section */}
+                    <table
+                        className={`w-[60%] mx-auto border-collapse ${
+                            showServerSection ? "" : "hidden"
+                        }`}
+                    >
+                        <thead>
+                            <tr className="border-y border-gray-200">
+                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                    {t("network_test.ip")}
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                    {t("network_test.location")}
+                                </th>
+                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                    {t("network_test.server")}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="text-lg font-semibold py-2 text-gray-700 text-center">
+                                    {ip || "..."}
+                                </td>
+                                <td className="text-lg font-semibold py-2 text-gray-700 text-center">
+                                    {location || "..."}
+                                </td>
+                                <td className="text-lg font-semibold py-2 text-gray-700 text-center">
+                                    {server || "..."}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Test button section */}
+                <div className="flex justify-center">
+                    {showTestInterface && (
+                        <button
+                            onClick={startTest}
+                            disabled={testing}
+                            className="my-6 px-8 py-3 mx-4 primary text-white text-lg rounded-lg shadow hover:bg-green-600 disabled:opacity-50 transition-colors"
+                        >
+                            {testing
+                                ? t("network_test.testing")
+                                : t("network_test.test_again")}
+                        </button>
+                    )}
+                </div>
+
+                {/* Description section */}
+                <div
+                    className={`${
+                        lang === "en" ? "text-left" : "text-right"
+                    } p-6 bg-gray-50 py-10 w-full`}
+                >
+                    <h2 className="text-xl font-bold mb-4 text-primary">
+                        {t("network_test.about_title")}
+                    </h2>
+                    <p className="mb-4">{t("network_test.description_long")}</p>
+                    <div className="mb-4">
+                        <h3 className="text-lg font-bold inline-block ml-2">
+                            {t("network_test.guide_title")}:
+                        </h3>
+                        <span>{t("network_test.guide_description")}</span>
+                    </div>
+                    <ul className="list-disc px-5 space-y-2 text-gray-800">
+                        <li>{t("network_test.guide_item1")}</li>
+                        <li>{t("network_test.guide_item2")}</li>
+                        <li>{t("network_test.guide_item3")}</li>
+                        <li>{t("network_test.guide_item4")}</li>
+                        <li>{t("network_test.guide_item5")}</li>
+                    </ul>
+                    <p className="mt-6 text-gray-800 font-bold">
+                        {t("network_test.support_message")}
+                    </p>
+                </div>
+
+                {/* Curved div */}
+                <div className="rotate-180 w-full">
+                    <svg
+                        className="packages_svg"
+                        xmlns="http://www.w3.org/2000/svg"
+                        version="1.1"
+                        xmlnsXlink="http://www.w3.org/1999/xlink"
+                        width="100%"
+                        height="100"
+                        preserveAspectRatio="none"
+                        viewBox="0 0 1440 100"
+                    >
+                        <g mask='url("#SvgjsMask1071")' fill="none">
+                            <path
+                                d="M 0,40 C 96,50 288,90.2 480,90 C 672,89.8 768,43 960,39 C 1152,35 1344,63.8 1440,70L1440 100L0 100z"
+                                fill="#f7f9fc"
+                            ></path>
+                        </g>
+                        <defs>
+                            <mask id="SvgjsMask1071">
+                                <rect
+                                    width="1440"
+                                    height="100"
+                                    fill="#ffffff"
+                                ></rect>
+                            </mask>
+                        </defs>
+                    </svg>
                 </div>
             </div>
         </AppLayoutSwitcher>

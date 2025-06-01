@@ -11,6 +11,8 @@ import Dropdown from "@/Components/Dropdown";
 import { IoIosArrowDown } from "react-icons/io";
 import { AiTwotoneMail } from "react-icons/ai";
 import HeaderV2 from "@/Components/HeaderV2";
+import { Toaster } from "react-hot-toast";
+
 export default function AppLayoutV2({
     auth,
     children,
@@ -32,9 +34,20 @@ export default function AppLayoutV2({
         document.body.classList.toggle("farsi-digits", isRtl);
     }, [i18n.language]);
 
-
     return (
         <div className="min-h-screen bg-gray-100">
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    duration: 3000,
+                    style: {
+                        direction:
+                            i18n.language === "fa" || i18n.language === "ps"
+                                ? "rtl"
+                                : "ltr",
+                    },
+                }}
+            />
             {/* Header */}
             <HeaderV2 auth={auth} servicesItems={servicesItems} />
 

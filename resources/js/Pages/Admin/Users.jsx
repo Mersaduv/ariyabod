@@ -4,14 +4,17 @@ import moment from 'moment';
 import jMoment from 'moment-jalaali';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import Modal from "@/Components/ui/Modal";
+import { useTranslation } from 'react-i18next';
 
 jMoment.loadPersian({ dialect: 'persian-modern' });
 
 export default function Users({ auth, users }) {
+    const { t } = useTranslation();
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(null);
     const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const lang = localStorage.getItem("lang") || "fa";
 
     const toggleUserRole = (userId) => {
         router.patch(route('admin.users.toggle-role', userId), {}, {
@@ -29,7 +32,7 @@ export default function Users({ auth, users }) {
     };
 
     const formatRelativeTime = (date) => {
-        if (!date) return 'هیچ فعالیتی ثبت نشده است';
+        if (!date) return t('admin.users.no_activity');
 
         // Convert both to local time to avoid timezone issues
         const now = moment();
@@ -66,11 +69,11 @@ export default function Users({ auth, users }) {
             <Modal
                 show={showDeleteUserModal}
                 onClose={() => setShowDeleteUserModal(false)}
-                title="حذف کاربر"
+                title={t('admin.users.delete_user')}
             >
                 <>
                     <p className="text-lg font-medium pb-4">
-                        آیا از حذف این کاربر اطمینان دارید؟ این عمل قابل بازگشت نیست.
+                        {t('admin.users.delete_confirmation')}
                     </p>
                     <hr className="mb-4" />
                     <div className="flex justify-between gap-2">
@@ -99,14 +102,14 @@ export default function Users({ auth, users }) {
                             }}
                             disabled={isSubmitting}
                         >
-                            بله
+                            {t('admin.users.yes')}
                         </button>
                         <button
                             className="bg-gray-500 hover:bg-gray-600 min-w-24 text-white px-4 py-2 rounded-md"
                             onClick={() => setShowDeleteUserModal(false)}
                             disabled={isSubmitting}
                         >
-                            انصراف
+                            {t('admin.users.cancel')}
                         </button>
                     </div>
                 </>
@@ -115,7 +118,7 @@ export default function Users({ auth, users }) {
             <DashboardLayout auth={auth}>
                 <div className="p-4 space-y-6">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-semibold">مدیریت کاربران</h2>
+                        <h2 className="text-xl font-semibold">{t('admin.users.management')}</h2>
                     </div>
 
                     {/* User table */}
@@ -127,26 +130,26 @@ export default function Users({ auth, users }) {
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    نام
+                                                <th className={`px-6 py-3 ${lang === "fa" ? "text-right" : "text-left"} text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                                                    {t('admin.users.table.name')}
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    ایمیل
+                                                <th className={`px-6 py-3 ${lang === "fa" ? "text-right" : "text-left"} text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                                                    {t('admin.users.table.email')}
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    نقش
+                                                <th className={`px-6 py-3 ${lang === "fa" ? "text-right" : "text-left"} text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                                                    {t('admin.users.table.role')}
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    تاریخ عضویت
+                                                <th className={`px-6 py-3 ${lang === "fa" ? "text-right" : "text-left"} text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                                                    {t('admin.users.table.join_date')}
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    تعداد بازدیدها
+                                                <th className={`px-6 py-3 ${lang === "fa" ? "text-right" : "text-left"} text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                                                    {t('admin.users.table.visits_count')}
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    آخرین فعالیت
+                                                <th className={`px-6 py-3 ${lang === "fa" ? "text-right" : "text-left"} text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                                                    {t('admin.users.table.last_activity')}
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    عملیات
+                                                <th className={`px-6 py-3 ${lang === "fa" ? "text-right" : "text-left"} text-xs font-medium text-gray-500 uppercase tracking-wider`}>
+                                                    {t('admin.users.table.actions')}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -165,7 +168,7 @@ export default function Users({ auth, users }) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                            {user.role === 'admin' ? 'مدیر' : 'کاربر'}
+                                                            {user.role === 'admin' ? t('admin.users.role.admin') : t('admin.users.role.user')}
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -178,7 +181,7 @@ export default function Users({ auth, users }) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-500">
-                                                            {user.last_activity ? formatRelativeTime(user.last_activity.visited_at) : 'هیچ فعالیتی ثبت نشده است'}
+                                                            {user.last_activity ? formatRelativeTime(user.last_activity.visited_at) : t('admin.users.no_activity')}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -187,13 +190,13 @@ export default function Users({ auth, users }) {
                                                                 onClick={() => toggleUserRole(user.id)}
                                                                 className="text-indigo-600 hover:text-indigo-900 ml-4"
                                                             >
-                                                                {user.role === 'admin' ? 'تبدیل به کاربر' : 'تبدیل به مدیر'}
+                                                                {user.role === 'admin' ? t('admin.users.role.make_user') : t('admin.users.role.make_admin')}
                                                             </button>
                                                             <button
                                                                 onClick={() => handleDeleteUser(user.id)}
                                                                 className="text-red-600 hover:text-red-900"
                                                             >
-                                                                حذف
+                                                                {t('admin.users.delete')}
                                                             </button>
                                                         </div>
                                                     </td>
@@ -212,32 +215,32 @@ export default function Users({ auth, users }) {
                                         >
                                             <div className="mb-2 flex justify-between items-start">
                                                 <div>
-                                                    <strong>نام:</strong>{" "}
+                                                    <strong>{t('admin.users.table.name')}:</strong>{" "}
                                                     <Link href={route('admin.users.show', user.id)} className="text-indigo-600 hover:text-indigo-900">
                                                         {user.name}
                                                     </Link>
                                                 </div>
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {user.role === 'admin' ? 'مدیر' : 'کاربر'}
+                                                    {user.role === 'admin' ? t('admin.users.role.admin') : t('admin.users.role.user')}
                                                 </span>
                                             </div>
 
                                             <div className="mb-2">
-                                                <strong>ایمیل:</strong>{" "}
+                                                <strong>{t('admin.users.table.email')}:</strong>{" "}
                                                 {user.email}
                                             </div>
                                             <div className="mb-2">
-                                                <strong>تاریخ عضویت:</strong>{" "}
+                                                <strong>{t('admin.users.table.join_date')}:</strong>{" "}
                                                 {formatDate(user.created_at)}
                                             </div>
                                             <div className="mb-2">
-                                                <strong>تعداد بازدیدها:</strong>{" "}
+                                                <strong>{t('admin.users.table.visits_count')}:</strong>{" "}
                                                 {user.visits_count}
                                             </div>
                                             <div className="mb-2">
-                                                <strong>آخرین فعالیت:</strong>{" "}
+                                                <strong>{t('admin.users.table.last_activity')}:</strong>{" "}
                                                 <span className="text-gray-600">
-                                                    {user.last_activity ? formatRelativeTime(user.last_activity.visited_at) : 'هیچ فعالیتی ثبت نشده است'}
+                                                    {user.last_activity ? formatRelativeTime(user.last_activity.visited_at) : t('admin.users.no_activity')}
                                                 </span>
                                             </div>
 
@@ -246,13 +249,13 @@ export default function Users({ auth, users }) {
                                                     onClick={() => toggleUserRole(user.id)}
                                                     className="text-indigo-600 hover:text-indigo-900 text-sm"
                                                 >
-                                                    {user.role === 'admin' ? 'تبدیل به کاربر' : 'تبدیل به مدیر'}
+                                                    {user.role === 'admin' ? t('admin.users.role.make_user') : t('admin.users.role.make_admin')}
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteUser(user.id)}
                                                     className="text-red-600 hover:text-red-900 text-sm"
                                                 >
-                                                    حذف
+                                                    {t('admin.users.delete')}
                                                 </button>
                                             </div>
                                         </div>
@@ -261,7 +264,7 @@ export default function Users({ auth, users }) {
                             </>
                         ) : (
                             <div className="text-center py-4 text-gray-500">
-                                هیچ کاربری یافت نشد
+                                {t('admin.users.no_users')}
                             </div>
                         )}
                     </div>

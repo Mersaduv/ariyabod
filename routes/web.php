@@ -32,7 +32,9 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/run-speedtest', [SpeedTestController::class, 'run']);
+Route::get('/speedtest/ping', [SpeedTestController::class, 'ping']);
+Route::get('/speedtest/download-file', [SpeedTestController::class, 'downloadFile']);
+Route::post('/speedtest/upload-target', [SpeedTestController::class, 'uploadTarget']);
 
 Route::middleware(['log.visit'])->group(function () {
     Route::get('/', function () {

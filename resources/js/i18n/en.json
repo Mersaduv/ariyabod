@@ -108,6 +108,7 @@
     "banners": "Banners",
     "users": "Users",
     "internet_packages_item": "Internet Packages",
+    "slider_items_name": "Sliders",
     "week": "Week",
     "month": "Month",
     "year": "Year",
@@ -483,6 +484,9 @@
         "title": "Request Internet",
         "note_p1": "The process of requesting internet is such that after receiving the message and checking your location, it will contact you."
     },
+    "tools": {
+        "title": "Tools"
+    },
     "about_us": {
         "main_description": "Ariyabod Companies Group is a regional company located in Herat, Afghanistan. The company began its initial activities in 2019 in the advertising services sector, and in early 2020, expanded its operations to provide better and more up-to-date services in Information and Communication Technology (ICT). In 2021, the opening of another service branch to the Ariyabod Companies Group demonstrates the planning, effort, and perseverance of the Ariyabod team for continuous growth. Quantitative and qualitative growth has been the main concern of the Ariyabod team, and in this regard, we have strived to meet the needs of society and technology enthusiasts as a young team by providing quality Internet Service Provider (ISP) services and expanding technology in our beloved country.",
         "main_description2": "Ariyabod Companies Group is a regional company located in Herat, Afghanistan. The company began its initial activities in 2019 in the advertising services sector, and in early 2020 expanded its operations to provide better and more up-to-date services in Information and Communication Technology (ICT). The Ariyabod team carries out its activities in the advertising sector which includes design, branding, social media management, office sets, and printing; in the technology sector which includes installation of security cameras, domain and hosting, video transmission, online attendance systems, electronic locks, and consultation and implementation of smart systems and networks; and in the internet services sector which includes wireless, microwave, and satellite internet with standard and quality services under the latest network security protocols.",
@@ -506,5 +510,32 @@
         "description": "One of the goals of creating this user panel is to view and be informed about your remaining internet package volume. Fortunately, this is easily possible, as you automatically log into your user panel upon entry and can view the remaining days, remaining volume, usage volume, and a detailed report of all packages you have activated in the past and present.",
         "note": "It should be noted that this feature is exclusive to subscribers of Ariyabod Technology and Internet Services Company.",
         "view_package_info": "Your Package Information"
+    },
+    "admin": {
+        "users": {
+            "management": "User Management",
+            "delete_user": "Delete User",
+            "delete_confirmation": "Are you sure you want to delete this user? This action cannot be undone.",
+            "yes": "Yes",
+            "cancel": "Cancel",
+            "table": {
+                "name": "Name",
+                "email": "Email",
+                "role": "Role",
+                "join_date": "Join Date",
+                "visits_count": "Visits Count",
+                "last_activity": "Last Activity",
+                "actions": "Actions"
+            },
+            "role": {
+                "admin": "Admin",
+                "user": "User",
+                "make_admin": "Make Admin",
+                "make_user": "Make User"
+            },
+            "delete": "Delete",
+            "no_users": "No users found",
+            "no_activity": "No activity recorded"
+        }
     }
 }

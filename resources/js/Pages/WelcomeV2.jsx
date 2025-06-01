@@ -13,6 +13,7 @@ import { FaCheck } from "react-icons/fa6";
 
 import "aos/dist/aos.css";
 import { GrMapLocation } from "react-icons/gr";
+import { formatTimeToHumanReadable, formatTime } from "@/Utils/functions";
 
 const formatSpeed = (speedMb, t, lang) => {
     if (!speedMb && speedMb !== 0) return "";
@@ -380,13 +381,13 @@ export default memo(function WelcomeV2({
                                                 key={pkg.id}
                                                 data-aos="fade-up"
                                                 data-aos-delay={index * 100}
-                                                className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all"
+                                                className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all"
                                             >
                                                 <div
                                                     className={`p-4 ${
                                                         pkg.is_featured
-                                                            ? "bg-purple-50 border-b border-purple-100"
-                                                            : "bg-[#e6f7f4] border-b border-[#d1ebe6]"
+                                                            ? "bg-purple-100"
+                                                            : "bg-[#e6f7f4]"
                                                     }`}
                                                 >
                                                     <h3 className="text-lg font-semibold text-center">
@@ -394,11 +395,12 @@ export default memo(function WelcomeV2({
                                                     </h3>
                                                 </div>
 
-                                                <div className="p-6">
-                                                    <div className="flex justify-center mb-6">
-                                                        <span className="text-3xl font-bold text-[#428b7c]">
+                                                <div className="p-5">
+                                                    <div className="flex justify-center mb-4">
+                                                        <span className="text-2xl font-bold text-[#428b7c]">
                                                             {pkg.price.toLocaleString()}
-                                                            <span className="text-sm font-normal ml-1">
+                                                            <span className="text-sm font-normal">
+                                                                {" "}
                                                                 {t(
                                                                     "internet_packages.currency"
                                                                 )}
@@ -406,10 +408,10 @@ export default memo(function WelcomeV2({
                                                         </span>
                                                     </div>
 
-                                                    <div className="space-y-3">
+                                                    <div className="space-y-2">
                                                         {/* Type Badge */}
-                                                        <div className="mb-4">
-                                                            <span className="inline-block bg-gray-100 rounded-full px-4 py-1 text-sm text-gray-700 w-full text-center">
+                                                        <div className="mb-3">
+                                                            <span className="inline-block bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 w-full text-center">
                                                                 {t(
                                                                     `internet_packages.${pkg.type}`
                                                                 ) || pkg.type}
@@ -423,9 +425,9 @@ export default memo(function WelcomeV2({
                                                             ) &&
                                                             pkg.provinces
                                                                 .length > 0 && (
-                                                                <div className="flex items-center gap-2 mt-4 pt-2 text-gray-600">
-                                                                    <span>
-                                                                        <GrMapLocation className="text-[#428b7c] text-lg" />
+                                                                <div className="flex items-center gap-2 mt-4 pt-2">
+                                                                    <span className="text-gray-600">
+                                                                        <GrMapLocation className="primary-color text-lg" />
                                                                     </span>
                                                                     <span>
                                                                         {pkg.provinces.map(
@@ -460,68 +462,87 @@ export default memo(function WelcomeV2({
                                                                 </div>
                                                             )}
 
-                                                        {/* Features List */}
-                                                        <div className="pt-4 space-y-3">
-                                                            {/* Duration */}
-                                                            {pkg.duration_days && (
-                                                                <div className="flex gap-2 items-center">
-                                                                    <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded-full flex items-center justify-center">
-                                                                        <FaCheck className="text-white text-[10px]" />
-                                                                    </div>
-                                                                    <span className="text-gray-700">
-                                                                        {
-                                                                            pkg.duration_days
-                                                                        }{" "}
-                                                                        {t(
-                                                                            "internet_packages.days"
-                                                                        )}
-                                                                    </span>
+                                                        {/* Duration */}
+                                                        {pkg.duration_days && (
+                                                            <div className="flex gap-2">
+                                                                <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                    <FaCheck className="text-white text-[15px]" />
                                                                 </div>
-                                                            )}
+                                                                <span>
+                                                                    {
+                                                                        pkg.duration_days
+                                                                    }{" "}
+                                                                    {t(
+                                                                        "internet_packages.days"
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
 
-                                                            {/* Total Volume */}
-                                                            {pkg.total_volume_gb && (
-                                                                <div className="flex gap-2 items-center">
-                                                                    <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded-full flex items-center justify-center">
-                                                                        <FaCheck className="text-white text-[10px]" />
-                                                                    </div>
-                                                                    <span className="text-gray-700">
-                                                                        {
-                                                                            pkg.total_volume_gb
-                                                                        }{" "}
-                                                                        {t(
-                                                                            "internet_packages.gb"
-                                                                        )}
-                                                                    </span>
+                                                        {/* Total Volume */}
+                                                        {pkg.total_volume_gb && (
+                                                            <div className="flex gap-2">
+                                                                <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                    <FaCheck className="text-white text-[15px]" />
                                                                 </div>
-                                                            )}
+                                                                <span>
+                                                                    {
+                                                                        pkg.total_volume_gb
+                                                                    }{" "}
+                                                                    {t(
+                                                                        "internet_packages.gb"
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
 
-                                                            {/* Daily Limit */}
-                                                            {pkg.daily_limit_gb && (
-                                                                <div className="flex gap-2 items-center">
-                                                                    <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded-full flex items-center justify-center">
-                                                                        <FaCheck className="text-white text-[10px]" />
-                                                                    </div>
-                                                                    <span className="text-gray-700">
-                                                                        {
-                                                                            pkg.daily_limit_gb
-                                                                        }{" "}
-                                                                        {t(
-                                                                            "internet_packages.daily_gb"
-                                                                        )}
-                                                                    </span>
+                                                        {/* Daily Limit */}
+                                                        {pkg.daily_limit_gb && (
+                                                            <div className="flex gap-2">
+                                                                <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                    <FaCheck className="text-white text-[15px]" />
                                                                 </div>
-                                                            )}
+                                                                <span>
+                                                                    {
+                                                                        pkg.daily_limit_gb
+                                                                    }{" "}
+                                                                    {t(
+                                                                        "internet_packages.daily_gb"
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
 
-                                                            {/* Speed */}
-                                                            {pkg.speed_mb && (
-                                                                <div className="flex gap-2 items-center">
-                                                                    <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded-full flex items-center justify-center">
-                                                                        <FaCheck className="text-white text-[10px]" />
+                                                        {/* Speed */}
+                                                        {pkg.speed_mb && (
+                                                            <div className="flex gap-2">
+                                                                <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                    <FaCheck className="text-white text-[15px]" />
+                                                                </div>
+                                                                <span>
+                                                                    {formatSpeed(
+                                                                        pkg.speed_mb,
+                                                                        t,
+                                                                        lang
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {/* After Daily Limit Speed */}
+                                                        {pkg.daily_limit_gb &&
+                                                            pkg.after_daily_limit_speed_mb !==
+                                                                undefined && (
+                                                                <div className="flex gap-2">
+                                                                    <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                        <FaCheck className="text-white text-[15px]" />
                                                                     </div>
-                                                                    <span className="text-gray-700">
+                                                                    <span>
+                                                                        {t(
+                                                                            "internet_packages.after_daily_limit"
+                                                                        )}{" "}
                                                                         {formatSpeed(
-                                                                            pkg.speed_mb,
+                                                                            pkg.after_daily_limit_speed_mb,
                                                                             t,
                                                                             lang
                                                                         )}
@@ -529,27 +550,97 @@ export default memo(function WelcomeV2({
                                                                 </div>
                                                             )}
 
-                                                            {/* After Daily Limit Speed */}
-                                                            {pkg.daily_limit_gb &&
-                                                                pkg.after_daily_limit_speed_mb !==
-                                                                    undefined && (
-                                                                    <div className="flex gap-2 items-center">
-                                                                        <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded-full flex items-center justify-center">
-                                                                            <FaCheck className="text-white text-[10px]" />
-                                                                        </div>
-                                                                        <span className="text-gray-700">
-                                                                            {t(
-                                                                                "internet_packages.after_daily_limit"
-                                                                            )}{" "}
-                                                                            {formatSpeed(
-                                                                                pkg.after_daily_limit_speed_mb,
-                                                                                t,
-                                                                                lang
-                                                                            )}
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-                                                        </div>
+                                                        {/* Speed Slots for Unlimited packages */}
+                                                        {pkg.type ===
+                                                            "unlimited" &&
+                                                            pkg.speed_slots &&
+                                                            Object.keys(
+                                                                pkg.speed_slots
+                                                            ).length > 0 && (
+                                                                <div className="space-y-3">
+                                                                    {Object.entries(
+                                                                        pkg.speed_slots
+                                                                    ).map(
+                                                                        (
+                                                                            [
+                                                                                key,
+                                                                                slot,
+                                                                            ],
+                                                                            idx
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    idx
+                                                                                }
+                                                                                className="flex gap-2 text-sm"
+                                                                            >
+                                                                                <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                                    <FaCheck className="text-white text-[15px]" />
+                                                                                </div>
+                                                                                <div className="flex gap-1 items-center">
+                                                                                    <span>
+                                                                                        {t(
+                                                                                            "internet_packages.from"
+                                                                                        )}{" "}
+                                                                                        {formatTimeToHumanReadable(
+                                                                                            slot.from
+                                                                                        )}{" "}
+                                                                                        {t(
+                                                                                            "internet_packages.to"
+                                                                                        )}{" "}
+                                                                                        {formatTimeToHumanReadable(
+                                                                                            slot.to
+                                                                                        )}{" "}
+                                                                                        {formatSpeed(
+                                                                                            slot.speed_mb,
+                                                                                            t,
+                                                                                            lang
+                                                                                        )}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                        {/* Night Mode Information */}
+                                                        {pkg.has_night_free && (
+                                                            <div className="flex gap-2">
+                                                                <div className="bg-[#428b7c] border border-[#428b7c] w-5 h-5 rounded flex items-center justify-center">
+                                                                    <FaCheck className="text-white text-[15px]" />
+                                                                </div>
+                                                                <div className="flex gap-1 items-center">
+                                                                    <span className="text-sm">
+                                                                        {t(
+                                                                            "internet_packages.from"
+                                                                        )}{" "}
+                                                                        {formatTimeToHumanReadable(
+                                                                            formatTime(
+                                                                                pkg.night_free_start_time
+                                                                            )
+                                                                        )}{" "}
+                                                                        {t(
+                                                                            "internet_packages.to"
+                                                                        )}{" "}
+                                                                        {formatTimeToHumanReadable(
+                                                                            formatTime(
+                                                                                pkg.night_free_end_time
+                                                                            )
+                                                                        )}{" "}
+                                                                        {pkg.is_night_free
+                                                                            ? t(
+                                                                                  "internet_packages.free"
+                                                                              )
+                                                                            : formatSpeed(
+                                                                                  pkg.night_free_speed_mb,
+                                                                                  t,
+                                                                                  lang
+                                                                              )}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -603,7 +694,7 @@ export default memo(function WelcomeV2({
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                                ابزار ها
+                                {t("tools.title")}
                             </h2>
                             <div className="w-24 h-1 bg-[#428b7c] mx-auto"></div>
                         </div>

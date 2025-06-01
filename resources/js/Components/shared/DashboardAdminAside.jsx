@@ -47,7 +47,7 @@ const menuItems = [
     },
     {
         id: 6,
-        name: "slider_items",
+        name: "slider_items_name",
         Icon: TfiLayoutSliderAlt,
         path: ["/admin/slider-items"],
     },

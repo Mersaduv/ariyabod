@@ -406,6 +406,90 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                             opacity: 1;
                             max-height: 1000px;
                         }
+
+                        @media (max-width: 600px) {
+                            .test-section {
+                                padding: 0 10px;
+                            }
+                            .test-section.visible {
+                                max-height: 800px;
+                            }
+                        }
+
+                        @media (max-width: 430px) {
+                            .test-section {
+                                padding: 0 5px;
+                            }
+                            .test-section.visible {
+                                max-height: 700px;
+                            }
+                        }
+
+                        /* Bar animation styles */
+                        .middle {
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            position: absolute;
+                            white-space: nowrap;
+                            text-align: center;
+                            min-width: 80px;
+                        }
+                        .bar {
+                            width: 7px;
+                            height: 30px;
+                            display: inline-block;
+                            transform-origin: bottom center;
+                            border-top-right-radius: 20px;
+                            border-top-left-radius: 20px;
+                            animation: loader 1.2s linear infinite;
+                            margin: 0 1px;
+                        }
+
+                        @media (max-width: 600px) {
+                            .middle {
+                                transform: translate(-50%, -50%) scale(0.8);
+                            }
+                            .bar {
+                                width: 5px;
+                                height: 22px;
+                            }
+                        }
+
+                        @media (max-width: 430px) {
+                            .middle {
+                                transform: translate(-50%, -50%) scale(0.65);
+                            }
+                            .bar {
+                                width: 4px;
+                                height: 18px;
+                                margin: 0 1px;
+                            }
+                        }
+
+                        .bar1 { animation-delay: 0.1s; }
+                        .bar2 { animation-delay: 0.2s; }
+                        .bar3 { animation-delay: 0.3s; }
+                        .bar4 { animation-delay: 0.4s; }
+                        .bar5 { animation-delay: 0.5s; }
+                        .bar6 { animation-delay: 0.6s; }
+                        .bar7 { animation-delay: 0.7s; }
+                        .bar8 { animation-delay: 0.8s; }
+
+                        @keyframes loader {
+                            0% {
+                                transform: scaleY(0.1);
+                                background: #428b7c;
+                            }
+                            50% {
+                                transform: scaleY(1);
+                                background: yellowgreen;
+                            }
+                            100% {
+                                transform: scaleY(0.1);
+                                background: transparent;
+                            }
+                        }
                     `}</style>
 
                     {!showTestInterface && (
@@ -421,13 +505,13 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                     <table className="w-[60%] mx-auto border-collapse">
                         <thead>
                             <tr className="border-y border-gray-200">
-                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                <th className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 w-[33.3%] text-center">
                                     {t("network_test.ping")}
                                 </th>
-                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                <th className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 w-[33.3%] text-center">
                                     {t("network_test.download")}
                                 </th>
-                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                <th className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 w-[33.3%] text-center">
                                     {t("network_test.upload")}
                                 </th>
                             </tr>
@@ -435,7 +519,7 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                         <tbody>
                             <tr>
                                 <td
-                                    className={`text-lg relative text-center font-semibold py-2 ${
+                                    className={`text-[14px] xs:text-base sm:text-lg relative text-center font-semibold py-2 ${
                                         testPhase === "ping"
                                             ? "text-green-500"
                                             : "text-gray-700"
@@ -456,7 +540,7 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                                     {ping ? `${ping} ms` : ""}
                                 </td>
                                 <td
-                                    className={`text-lg relative text-center font-semibold py-2 ${
+                                    className={`text-[14px] xs:text-base sm:text-lg relative text-center font-semibold py-2 ${
                                         testPhase === "download"
                                             ? "text-green-500"
                                             : "text-gray-700"
@@ -480,7 +564,7 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                                         : ""}
                                 </td>
                                 <td
-                                    className={`text-lg relative text-center font-semibold py-2 ${
+                                    className={`text-[14px] xs:text-base sm:text-lg relative text-center font-semibold py-2 ${
                                         testPhase === "upload"
                                             ? "text-green-500"
                                             : "text-gray-700"
@@ -524,26 +608,26 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                     >
                         <thead>
                             <tr className="border-y border-gray-200">
-                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                <th className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 w-[33.3%] text-center">
                                     {t("network_test.ip")}
                                 </th>
-                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                <th className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 w-[33.3%] text-center">
                                     {t("network_test.location")}
                                 </th>
-                                <th className="text-lg font-semibold py-2 w-[33.3%] text-center">
+                                <th className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 w-[33.3%] text-center">
                                     {t("network_test.server")}
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td className="text-lg font-semibold py-2 text-gray-700 text-center">
+                                <td className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 text-gray-700 text-center">
                                     {ip || "..."}
                                 </td>
-                                <td className="text-lg font-semibold py-2 text-gray-700 text-center">
+                                <td className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 text-gray-700 text-center">
                                     {location || "..."}
                                 </td>
-                                <td className="text-lg font-semibold py-2 text-gray-700 text-center">
+                                <td className="text-[14px] xs:text-base sm:text-lg font-semibold py-2 text-gray-700 text-center">
                                     {server || "..."}
                                 </td>
                             </tr>

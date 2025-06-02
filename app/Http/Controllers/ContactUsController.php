@@ -51,7 +51,7 @@ class ContactUsController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['email_error' => 'خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید.']);
+                ->withErrors(['email_error' => 'خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید. ' . $e->getMessage()]);
         }
     }
 }

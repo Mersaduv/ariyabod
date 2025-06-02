@@ -262,7 +262,7 @@ export default function Header({ auth }) {
                         className="md2:hidden fixed top-[70px] inset-x-0 bg-[#2c5f59] text-white shadow-md z-40"
                     >
                         <nav className="flex flex-col px-4 py-4 space-y-3">
-                        {auth.user ? (
+                            {auth.user ? (
                                 <div className="w-full">
                                     <button
                                         id="sample-dropdown"
@@ -386,14 +386,16 @@ export default function Header({ auth }) {
                             {/* <Link href="#" className="hover:text-[#4adcbf]">
                                 {t("login")}
                             </Link> */}
-                            <Link
-                                href={route("logout")}
-                                method="post"
-                                as="button"
-                                className="hover:text-[#4adcbf] font-semibold text-start"
-                            >
-                                {t("logout")}
-                            </Link>
+                            {auth.user && (
+                                <Link
+                                    href={route("logout")}
+                                    method="post"
+                                    as="button"
+                                    className="hover:text-[#4adcbf] font-semibold text-start"
+                                >
+                                    {t("logout")}
+                                </Link>
+                            )}
                         </nav>
                     </div>
                 )}

@@ -407,6 +407,45 @@ export default function HeaderV2({ auth, servicesItems }) {
                 {mobileMenuOpen && (
                     <div className="md1:hidden bg-white py-4 px-6 shadow-lg max-h-[80vh] overflow-y-auto">
                         <div className="flex flex-col space-y-4">
+                            {/* Display user info if authenticated */}
+                            {auth && auth.user && (
+                                <div className="border-b border-gray-200 pb-2">
+                                    <button
+                                        className="w-full flex items-center justify-between py-3 px-3 text-gray-600 hover:bg-gray-50 rounded-md"
+                                        onClick={() => {
+                                            const userMenu = document.getElementById("mobile-user-menu");
+                                            userMenu.classList.toggle("hidden");
+                                        }}
+                                    >
+                                        <span>{auth.user.name}</span>
+                                        <IoIosArrowDown className="transition-transform" />
+                                    </button>
+                                    <div
+                                        id="mobile-user-menu"
+                                        className="hidden bg-gray-50 rounded-md mt-1 px-2"
+                                    >
+                                        <div className="py-3 px-3 text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap"
+                                            dir={localStorage.getItem("lang") === "en" ? "" : "ltr"}>
+                                            {auth.user.email}
+                                        </div>
+                                        {auth.user.role === "admin" && (
+                                            <Link
+                                                href={route("admin.dashboard")}
+                                                className="block py-3 px-3 text-gray-600 hover:bg-gray-100 rounded-md"
+                                            >
+                                                {t("dashboard")}
+                                            </Link>
+                                        )}
+                                        <Link
+                                            href={route(isV2 ? "v2.profile.edit" : "profile.edit")}
+                                            className="block py-3 px-3 text-gray-600 hover:bg-gray-100 rounded-md"
+                                        >
+                                            {t("profile")}
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+
                             <Link
                                 className="py-3 px-3 text-gray-600 hover:bg-gray-50 rounded-md"
                                 href={isV2 ? "/v2" : "/"}
@@ -558,6 +597,26 @@ export default function HeaderV2({ auth, servicesItems }) {
                                     <AiTwotoneMail className="text-[#428b7c] text-xl" />
                                     <span>Info@ariyabod.af</span>
                                 </a>
+
+                                {/* Login/Logout button */}
+                                {auth && auth.user ? (
+                                    <Link
+                                        href={route(isV2 ? "v2.logout" : "logout")}
+                                        method="post"
+                                        as="button"
+                                        className="w-full text-start flex items-center gap-2 py-3 px-3 text-red-500 hover:bg-gray-50 rounded-md"
+                                    >
+                                        {t("logout")}
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href={route(isV2 ? "v2.login" : "login")}
+                                        className="flex items-center gap-2 py-3 px-3 text-gray-600 hover:text-[#428b7c]"
+                                    >
+                                        <FaUserAlt className="text-[#428b7c]" />
+                                        <span>{t("login")}</span>
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>

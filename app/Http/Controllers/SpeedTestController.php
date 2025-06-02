@@ -20,13 +20,14 @@ class SpeedTestController extends Controller
                 ob_end_clean();
             }
 
-            $sizeInBytes = 10 * 1024 * 1024; // 10MB
-            $chunk = str_repeat("0", 1024); // 1KB
-            $chunks = $sizeInBytes / 1024;
+            // 10MB random data
+            $sizeInBytes = 10 * 1024 * 1024;
+            $chunkSize = 1024; // 1KB
+            $chunks = $sizeInBytes / $chunkSize;
 
-            return new StreamedResponse(function () use ($chunks, $chunk) {
+            return new StreamedResponse(function () use ($chunks, $chunkSize) {
                 for ($i = 0; $i < $chunks; $i++) {
-                    echo $chunk;
+                    echo random_bytes($chunkSize);
                     flush();
 
                     if (connection_aborted()) {
@@ -37,6 +38,7 @@ class SpeedTestController extends Controller
             }, 200, [
                 'Content-Type' => 'application/octet-stream',
                 'Content-Disposition' => 'attachment; filename="testfile.dat"',
+                'Content-Encoding' => 'identity', // جلوگیری از فشرده‌سازی
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
                 'Pragma' => 'no-cache',
                 'Expires' => '0',

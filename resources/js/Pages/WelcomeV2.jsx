@@ -679,7 +679,7 @@ export default memo(function WelcomeV2({
                                     {t("about_us.main_description2")}
                                 </p>
                                 <Link
-                                    href="/about-us"
+                                    href="/v2/about-us"
                                     className="px-8 py-3 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition inline-block"
                                 >
                                     {t("more_info")}
@@ -746,7 +746,7 @@ export default memo(function WelcomeV2({
                                     </p>
                                     <div className="text-center">
                                         <Link
-                                            href="/calculate-bundle"
+                                            href="/v2/calculate-bundle"
                                             className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition inline-block"
                                         >
                                             {t("view")}
@@ -774,7 +774,7 @@ export default memo(function WelcomeV2({
                                     </p>
                                     <div className="text-center">
                                         <Link
-                                            href="/bandwidth-calculator"
+                                            href="/v2/bandwidth-calculator"
                                             className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition inline-block"
                                         >
                                             {t("view")}
@@ -802,7 +802,7 @@ export default memo(function WelcomeV2({
                                     </p>
                                     <div className="text-center">
                                         <Link
-                                            href="/request-internet"
+                                            href="/v2/request-internet"
                                             className="px-6 py-2 bg-[#428b7c] text-white rounded-full hover:bg-[#357a6c] transition inline-block"
                                         >
                                             {t("view")}

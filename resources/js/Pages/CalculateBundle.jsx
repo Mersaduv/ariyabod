@@ -3,6 +3,9 @@ import { Head } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect, useRef } from "react";
 
+// Network protocol overhead factor (accounts for TCP/IP headers, etc.)
+const NETWORK_OVERHEAD_FACTOR = 0.94; // Approximately 6% overhead
+
 export default function CalculateBundle({
     auth,
     headerData,
@@ -80,6 +83,9 @@ export default function CalculateBundle({
     const convertToBaseUnits = () => {
         // Convert speed to KB/s (divide by 8 for Kb to KB)
         let baseSpeed = speedUnit === "Kb" ? speed / 8 : speed * 125; // If Mb, convert to KB/s
+
+        // Apply overhead factor - always consider network overhead
+        baseSpeed = baseSpeed * NETWORK_OVERHEAD_FACTOR;
 
         // Convert volume to MB
         let baseVolume = parseFloat(volume);
@@ -213,7 +219,7 @@ export default function CalculateBundle({
                 baseSpeed &&
                 baseVolume
             ) {
-                // Calculate time in seconds
+                // Calculate time in seconds, considering network overhead
                 const calculatedTime = (baseVolume * 1024) / baseSpeed;
                 const formattedTime = formatTime(calculatedTime);
                 setTime(formattedTime.value);
@@ -228,7 +234,7 @@ export default function CalculateBundle({
                 baseSpeed &&
                 baseTime
             ) {
-                // Calculate volume in MB
+                // Calculate volume in MB, considering network overhead
                 const calculatedVolume = (baseSpeed * baseTime) / 1024;
                 const formattedVolume = formatVolume(calculatedVolume);
                 setVolume(formattedVolume.value);
@@ -243,8 +249,12 @@ export default function CalculateBundle({
                 baseVolume &&
                 baseTime
             ) {
-                // Calculate speed in Kb/s
-                const calculatedSpeedKB = (baseVolume * 1024) / baseTime;
+                // Calculate raw speed in KB/s
+                let calculatedSpeedKB = (baseVolume * 1024) / baseTime;
+
+                // Apply inverse of overhead factor to get advertised speed
+                calculatedSpeedKB = calculatedSpeedKB / NETWORK_OVERHEAD_FACTOR;
+
                 const calculatedSpeedKb = calculatedSpeedKB * 8; // Convert KB/s to Kb/s
                 const formattedSpeed = formatSpeed(calculatedSpeedKb);
                 setSpeed(formattedSpeed.value);

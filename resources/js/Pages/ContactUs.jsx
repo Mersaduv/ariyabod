@@ -18,8 +18,6 @@ export default function ContactUs({
     const { flash } = usePage().props;
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { url } = usePage();
-    const isV2 = url === "/v2" || url.startsWith("/v2/");
 
     const { data, setData, post, processing, errors, reset } = useForm({
         first_name: "",
@@ -79,11 +77,7 @@ export default function ContactUs({
         >
             <Head title={t("nav.contactUs")} />
 
-            <div
-                className={`mb-10 ${
-                    isV2 ? "-mt-1.5 md1:pt-[30px]" : "pt-[60px]"
-                } `}
-            >
+            <div className={`mb-10 ${"-mt-1.5 md1:pt-[30px]"} `}>
                 {/* Google Map Section */}
                 <div className="w-full h-[400px] relative">
                     <iframe

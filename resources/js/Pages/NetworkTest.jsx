@@ -8,12 +8,21 @@ const TEST_DURATION = 13000;
 const PING_COUNT = 10;
 const DOWNLOAD_CONNECTIONS = 6;
 const UPLOAD_CONNECTIONS = 4;
+// Network protocol overhead factor (accounts for TCP/IP headers, etc.)
+const NETWORK_OVERHEAD_FACTOR = 0.94; // Approximately 6% overhead
 
-export default function NetworkTest({ auth, headerData, footerData, servicesItems }) {
+export default function NetworkTest({
+    auth,
+    headerData,
+    footerData,
+    servicesItems,
+}) {
     const { t } = useTranslation();
     const [ping, setPing] = useState(null);
     const [downloadSpeed, setDownloadSpeed] = useState(null);
     const [uploadSpeed, setUploadSpeed] = useState(null);
+    const [rawDownloadSpeed, setRawDownloadSpeed] = useState(null); // Store raw speed before overhead correction
+    const [rawUploadSpeed, setRawUploadSpeed] = useState(null); // Store raw speed before overhead correction
     const [testing, setTesting] = useState(false);
     const [testPhase, setTestPhase] = useState(null);
     const [currentSpeed, setCurrentSpeed] = useState(0);
@@ -67,9 +76,11 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                     const currentDuration =
                         (performance.now() - startTime) / 1000;
                     if (currentDuration > 0) {
-                        const currentSpeedMbps =
+                        const rawSpeedMbps =
                             (totalBytes * 8) / currentDuration / 1024 / 1024;
-                        setTargetSpeed(currentSpeedMbps);
+                        const adjustedSpeedMbps =
+                            rawSpeedMbps * NETWORK_OVERHEAD_FACTOR;
+                        setTargetSpeed(adjustedSpeedMbps);
                     }
                 }
             } catch {}
@@ -85,9 +96,12 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
         controllers.forEach((ctrl) => ctrl.abort());
 
         const duration = (performance.now() - startTime) / 1000;
-        const speedMbps = (totalBytes * 8) / duration / 1024 / 1024;
-        setTargetSpeed(speedMbps);
-        return speedMbps;
+        const rawSpeedMbps = (totalBytes * 8) / duration / 1024 / 1024;
+        const adjustedSpeedMbps = rawSpeedMbps * NETWORK_OVERHEAD_FACTOR;
+
+        setRawDownloadSpeed(rawSpeedMbps.toFixed(2));
+        setTargetSpeed(adjustedSpeedMbps);
+        return adjustedSpeedMbps;
     };
 
     const runUploadTest = async () => {
@@ -114,9 +128,11 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                     const currentDuration =
                         (performance.now() - startTime) / 1000;
                     if (currentDuration > 0) {
-                        const currentSpeedMbps =
+                        const rawSpeedMbps =
                             (totalBytes * 8) / currentDuration / 1024 / 1024;
-                        setTargetSpeed(currentSpeedMbps);
+                        const adjustedSpeedMbps =
+                            rawSpeedMbps * NETWORK_OVERHEAD_FACTOR;
+                        setTargetSpeed(adjustedSpeedMbps);
                     }
                 }
             } catch {}
@@ -131,9 +147,12 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
         shouldStop.stop = true;
 
         const duration = (performance.now() - startTime) / 1000;
-        const speedMbps = (totalBytes * 8) / duration / 1024 / 1024;
-        setTargetSpeed(speedMbps);
-        return speedMbps;
+        const rawSpeedMbps = (totalBytes * 8) / duration / 1024 / 1024;
+        const adjustedSpeedMbps = rawSpeedMbps * NETWORK_OVERHEAD_FACTOR;
+
+        setRawUploadSpeed(rawSpeedMbps.toFixed(2));
+        setTargetSpeed(adjustedSpeedMbps);
+        return adjustedSpeedMbps;
     };
 
     // دریافت اطلاعات IP و موقعیت
@@ -176,6 +195,8 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
         setPing(null);
         setDownloadSpeed(null);
         setUploadSpeed(null);
+        setRawDownloadSpeed(null);
+        setRawUploadSpeed(null);
         setTestPhase(null);
         setTargetSpeed(0);
         setCurrentSpeed(0);
@@ -467,14 +488,30 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                             }
                         }
 
-                        .bar1 { animation-delay: 0.1s; }
-                        .bar2 { animation-delay: 0.2s; }
-                        .bar3 { animation-delay: 0.3s; }
-                        .bar4 { animation-delay: 0.4s; }
-                        .bar5 { animation-delay: 0.5s; }
-                        .bar6 { animation-delay: 0.6s; }
-                        .bar7 { animation-delay: 0.7s; }
-                        .bar8 { animation-delay: 0.8s; }
+                        .bar1 {
+                            animation-delay: 0.1s;
+                        }
+                        .bar2 {
+                            animation-delay: 0.2s;
+                        }
+                        .bar3 {
+                            animation-delay: 0.3s;
+                        }
+                        .bar4 {
+                            animation-delay: 0.4s;
+                        }
+                        .bar5 {
+                            animation-delay: 0.5s;
+                        }
+                        .bar6 {
+                            animation-delay: 0.6s;
+                        }
+                        .bar7 {
+                            animation-delay: 0.7s;
+                        }
+                        .bar8 {
+                            animation-delay: 0.8s;
+                        }
 
                         @keyframes loader {
                             0% {
@@ -559,9 +596,13 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                                                 <div className="bar bar8"></div>
                                             </div>
                                         )}
-                                    {downloadSpeed
-                                        ? `${downloadSpeed} Mbps`
-                                        : ""}
+                                    {downloadSpeed ? (
+                                        <div>
+                                            <div className="text-green-600 font-bold">{`${downloadSpeed} Mbps`}</div>
+                                        </div>
+                                    ) : (
+                                        ""
+                                    )}
                                 </td>
                                 <td
                                     className={`text-[14px] xs:text-base sm:text-lg relative text-center font-semibold py-2 ${
@@ -582,7 +623,13 @@ export default function NetworkTest({ auth, headerData, footerData, servicesItem
                                             <div className="bar bar8"></div>
                                         </div>
                                     )}
-                                    {uploadSpeed ? `${uploadSpeed} Mbps` : ""}
+                                    {uploadSpeed ? (
+                                        <div>
+                                            <div className="text-green-600 font-bold">{`${uploadSpeed} Mbps`}</div>
+                                        </div>
+                                    ) : (
+                                        ""
+                                    )}
                                 </td>
                             </tr>
                         </tbody>

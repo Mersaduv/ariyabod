@@ -46,7 +46,7 @@ const AboutUs = ({ auth, headerData, footerData, servicesItems }) => {
                                     </p>
                                 </div>
                             </div>
-                            <div className=" md:min-w-[430px] md:h-[334px]">
+                            <div className="rounded-lg md:min-w-[430px] md:h-fit">
                                 <img
                                     src="/images/about.png"
                                     alt={t("about_us.image_alt")}

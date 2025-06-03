@@ -22,6 +22,7 @@ export default {
             lg: "1024px",
             lg1: "1100px",
             lg2: "1170px",
+            lg3: "1188px",
             sxl: "1200px",
             xl: "1280px",
             xl2: "1400px",

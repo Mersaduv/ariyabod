@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import GuestLayout from "@/Layouts/GuestLayout";
 import InputError from "@/Components/InputError";
@@ -6,28 +6,37 @@ import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function Register({ headerData, footerData }) {
     const { t } = useTranslation();
-    const { url } = usePage();
-    const isV2 = url === "/v2" || url.startsWith("/v2/");
+    const recaptchaRef = useRef(null);
     const { data, setData, post, processing, errors, reset } = useForm({
         name: "",
         email: "",
         password: "",
         password_confirmation: "",
+        recaptcha: "",
     });
 
     useEffect(() => {
         return () => {
-            reset("password", "password_confirmation");
+            reset("password", "password_confirmation", "recaptcha");
         };
     }, []);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route(isV2 ? "v2.register" : "register"));
+        post(route("register"));
     };
+
+    const handleRecaptchaChange = (value) => {
+        setData("recaptcha", value);
+    };
+
+    // Important: Replace 'YOUR_RECAPTCHA_SITE_KEY' with your actual Google reCAPTCHA site key
+    // Add RECAPTCHA_SITE_KEY and RECAPTCHA_SECRET_KEY to your .env file
+    const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "YOUR_RECAPTCHA_SITE_KEY";
 
     return (
         <GuestLayout headerData={headerData} footerData={footerData}>
@@ -99,6 +108,15 @@ export default function Register({ headerData, footerData }) {
                         <InputError message={errors.password_confirmation} className="mt-2" />
                     </div>
 
+                    <div className="mt-4">
+                        <ReCAPTCHA
+                            ref={recaptchaRef}
+                            sitekey={recaptchaSiteKey}
+                            onChange={handleRecaptchaChange}
+                        />
+                        <InputError message={errors.recaptcha} className="mt-2" />
+                    </div>
+
                     <div className="flex items-center justify-end mt-4">
                         <PrimaryButton className="ms-4" disabled={processing}>
                             {t("register")}
@@ -109,7 +127,7 @@ export default function Register({ headerData, footerData }) {
             <div className="flex items-center justify-start gap-1 w-full sm:max-w-md my-2 mr-2">
                 <div className="text-sm text-gray-600">{t("have_account")}</div>
                 <Link
-                    href={route(isV2 ? "v2.login" : "login")}
+                    href={route("login")}
                     className="primary-color text-sm font-bold underline"
                 >
                     {t("login")}

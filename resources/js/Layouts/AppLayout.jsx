@@ -1,10 +1,26 @@
-import Header from "../Components/Header";
-import Footer from "../Components/Footer";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { Link, usePage } from "@inertiajs/react";
+import NavLink from "@/Components/NavLink";
+import LanguageSwitcher from "@/Components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { FaBars, FaTimes, FaUserAlt } from "react-icons/fa";
+import { IoLocationOutline } from "react-icons/io5";
+import { BiEnvelope, BiPhone } from "react-icons/bi";
+import Footer from "@/Components/Footer";
+import Dropdown from "@/Components/Dropdown";
+import { IoIosArrowDown } from "react-icons/io";
+import { AiTwotoneMail } from "react-icons/ai";
 import { Toaster } from "react-hot-toast";
+import Header from "@/Components/Header";
 
-export default function AppLayout({ children, auth = {}, headerData, footerData }) {
+export default function AppLayout({
+    auth,
+    children,
+    footerData,
+    servicesItems,
+}) {
+    const { t } = useTranslation();
+    const { url } = usePage();
     const { i18n } = useTranslation();
     useEffect(() => {
         const lang = i18n.language;
@@ -19,40 +35,26 @@ export default function AppLayout({ children, auth = {}, headerData, footerData 
     }, [i18n.language]);
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen bg-gray-100">
             <Toaster
                 position="top-center"
                 toastOptions={{
                     duration: 3000,
                     style: {
-                        direction: i18n.language === "fa" || i18n.language === "ps" ? "rtl" : "ltr",
+                        direction:
+                            i18n.language === "fa" || i18n.language === "ps"
+                                ? "rtl"
+                                : "ltr",
                     },
                 }}
             />
-            <div className="fixed top-0 left-0 right-0 z-50">
-                {headerData && headerData.status && (
-                    <div className="relative h-10">
-                        <div
-                            className="text-lg font-bold absolute top-1 mx-auto left-0 right-0 text-center"
-                            style={{ color: headerData.header_color || "#000" }}
-                        >
-                            {headerData.header_text}
-                        </div>
-                        {headerData.header_logo && (
-                            <img
-                                src={headerData.header_logo}
-                                alt="لوگو"
-                                className="h-full max-h-10 w-full object-cover"
-                            />
-                        )}
-                    </div>
-                )}
+            {/* Header */}
+            <Header auth={auth} servicesItems={servicesItems} />
 
-                <Header auth={auth} />
-            </div>
+            {/* Adjusted main content spacing based on headerData status */}
+            <main className={`flex-1 pt-20`}>{children}</main>
 
-            <main className={`flex-1 ${headerData && headerData.status ? "pt-[40px]" : ""}`}>{children}</main>
-
+            {/* Footer */}
             <Footer footerData={footerData} />
         </div>
     );

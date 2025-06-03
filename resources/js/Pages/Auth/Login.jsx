@@ -15,8 +15,6 @@ export default function Login({
     footerData,
 }) {
     const { t } = useTranslation();
-    const { url } = usePage();
-    const isV2 = url === "/v2" || url.startsWith("/v2/");
     const { data, setData, post, processing, errors, reset } = useForm({
         email: "",
         password: "",
@@ -31,7 +29,7 @@ export default function Login({
 
     const submit = (e) => {
         e.preventDefault();
-        post(route(isV2 ? "v2.login" : "login"));
+        post(route("login"));
     };
 
     return (
@@ -99,7 +97,7 @@ export default function Login({
                     <div className="flex items-center justify-end mt-4">
                         {canResetPassword && (
                             <Link
-                                href={route(isV2 ? "v2.password.request" : "password.request")}
+                                href={route("password.request")}
                                 className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 {t("forgot_password")}
@@ -117,7 +115,7 @@ export default function Login({
                     {t("dont_have_account")}
                 </div>{" "}
                 <Link
-                    href={route(isV2 ? "v2.register" : "register")}
+                    href={route("register")}
                     className="primary-color text-sm font-bold underline"
                 >
                     {t("register")}

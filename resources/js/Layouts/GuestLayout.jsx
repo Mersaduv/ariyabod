@@ -4,13 +4,12 @@ import AppLayoutSwitcher from "./AppLayoutSwitcher";
 
 export default function Guest({ children, headerData, footerData, servicesItems }) {
     const { url } = usePage();
-    const isV2 = url === '/v2' || url.startsWith('/v2/');
 
     return (
         <AppLayoutSwitcher headerData={headerData} footerData={footerData} servicesItems={servicesItems}>
             <div className={`min-h-screen ${headerData && headerData.status ? "pt-[136px]" : "pt-[100px]"} flex flex-col sm:justify-start items-center bg-gray-50`}>
                 <div className="mb-4">
-                    <Link href={isV2 ? "/v2" : "/"}>
+                    <Link href="/">
                         <ApplicationLogo
                             className={"inline-block w-[250px] mr-2"}
                         />

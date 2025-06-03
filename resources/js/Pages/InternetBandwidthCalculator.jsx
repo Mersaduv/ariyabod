@@ -3,6 +3,9 @@ import { Head } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import { useState, useRef, useEffect } from "react";
 
+// Network protocol overhead factor (accounts for TCP/IP headers, etc.)
+const NETWORK_OVERHEAD_FACTOR = 0.94; // Approximately 6% overhead
+
 export default function InternetBandwidthCalculator({ auth, headerData, footerData, speedOptions, servicesItems }) {
     const { t, i18n } = useTranslation();
     const lang = localStorage.getItem("lang") || "fa";
@@ -78,8 +81,11 @@ export default function InternetBandwidthCalculator({ auth, headerData, footerDa
         // Convert speed from Kbps to KB/s (divide by 8)
         const speedInKBps = speed / 8;
 
-        // Calculate time in seconds
-        const timeInSeconds = (volumeInMB * 1024) / speedInKBps;
+        // Apply network overhead factor to get effective speed
+        const effectiveSpeedInKBps = speedInKBps * NETWORK_OVERHEAD_FACTOR;
+
+        // Calculate time in seconds considering network overhead
+        const timeInSeconds = (volumeInMB * 1024) / effectiveSpeedInKBps;
 
         return formatTime(timeInSeconds);
     };
@@ -100,8 +106,11 @@ export default function InternetBandwidthCalculator({ auth, headerData, footerDa
         // Convert speed from Kbps to KB/s (divide by 8)
         const speedInKBps = speedInKbps / 8;
 
-        // Calculate time in seconds
-        const timeInSeconds = (volumeInMB * 1024) / speedInKBps;
+        // Apply network overhead factor to get effective speed
+        const effectiveSpeedInKBps = speedInKBps * NETWORK_OVERHEAD_FACTOR;
+
+        // Calculate time in seconds considering network overhead
+        const timeInSeconds = (volumeInMB * 1024) / effectiveSpeedInKBps;
 
         return formatTime(timeInSeconds);
     };
